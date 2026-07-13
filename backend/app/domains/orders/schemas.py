@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, field_serializer
 from decimal import Decimal
 from typing import List, Optional
 from datetime import datetime
@@ -25,11 +25,19 @@ class CartItemUpdate(BaseModel):
             raise ValueError("Length must be in increments of 0.1 meters")
         return v
 
+def _fmt_currency(v: Decimal) -> str:
+    """Format Decimal to exactly 2 decimal places without float conversion."""
+    return str(v.quantize(Decimal('0.01')))
+
 class SimpleProductModelOut(BaseModel):
     id: int
     name: str
     base_price: Decimal
     fabric_height: Decimal
+
+    @field_serializer('base_price')
+    def serialize_base_price(self, v: Decimal) -> str:
+        return _fmt_currency(v)
 
     class Config:
         from_attributes = True
@@ -67,6 +75,10 @@ class OrderItemOut(BaseModel):
     historical_color_name: Optional[str] = None
     color_sku: Optional[CartColorSKUOut] = None
 
+    @field_serializer('price_at_purchase')
+    def serialize_price(self, v: Decimal) -> str:
+        return _fmt_currency(v)
+
     class Config:
         from_attributes = True
 
@@ -76,6 +88,10 @@ class OrderOut(BaseModel):
     total_price: Decimal
     created_at: datetime
     items: List[OrderItemOut] = []
+
+    @field_serializer('total_price')
+    def serialize_total_price(self, v: Decimal) -> str:
+        return _fmt_currency(v)
 
     class Config:
         from_attributes = True
