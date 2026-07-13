@@ -47,9 +47,6 @@ class CartItemOut(BaseModel):
     class Config:
         from_attributes = True
 
-class CartItemStatusUpdate(BaseModel):
-    item_ids: List[int]
-    status: str
 
 class CartOut(BaseModel):
     id: int
@@ -58,12 +55,17 @@ class CartOut(BaseModel):
     class Config:
         from_attributes = True
 
+class CheckoutRequest(BaseModel):
+    selected_item_ids: List[int]
+
 class OrderItemOut(BaseModel):
     id: int
     length_meters: Decimal
     units: int
     price_at_purchase: Decimal
-    color_sku: ColorSKUOut
+    historical_product_name: Optional[str] = None
+    historical_color_name: Optional[str] = None
+    color_sku: Optional[CartColorSKUOut] = None
 
     class Config:
         from_attributes = True

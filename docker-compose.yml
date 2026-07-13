@@ -14,6 +14,13 @@ services:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5m
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+      start_interval: 5s
 
   redis:
     image: redis:7.2-alpine
@@ -21,6 +28,13 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5m
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
 
   backend:
     build:
@@ -40,7 +54,7 @@ services:
       - DB_NAME=${DB_NAME:-fabric_store}
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY:-testsecretkey}
-      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-20160}
       - STORAGE_ENV=${STORAGE_ENV:-dev}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
@@ -48,10 +62,39 @@ services:
       - SMTP_PASS=${SMTP_PASS}
     volumes:
       - ./backend:/app
-      - backend_uploads:/app/uploads
+      - ./backend/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')\""]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db_backup:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fabric_backup
+    restart: always
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER:-fabric_user}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - DB_NAME=${DB_NAME:-fabric_store}
+    volumes:
+      - ./backend:/app
+      - ./credentials.json:/app/credentials.json
+      - ./token.json:/app/token.json
     depends_on:
       - db
-      - redis
+    command: python run_backup_scheduler.py
 
   frontend:
     build:

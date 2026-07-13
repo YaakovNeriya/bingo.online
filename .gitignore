@@ -14,6 +14,7 @@ __pycache__/
 *.env
 venv/
 env/
+.venv/
 
 # Environment variables
 .env
@@ -27,3 +28,14 @@ db_data/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Local Databases
+bingo.db
+*.sqlite3
+
+# Backups & Credentials
+credentials.json
+token.json
+backups/
+*.sql.gz
+local_archives/

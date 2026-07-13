@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     # App
     PROJECT_NAME: str = "Fabric Store"
     API_V1_STR: str = "/api/v1"
+    ENVIRONMENT: str = "development"
+    FRONTEND_URL: str = "http://localhost:5173"
+    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000,http://localhost"
     
     # Database
     DB_HOST: str
@@ -35,6 +38,9 @@ class Settings(BaseSettings):
     SMTP_PORT: Optional[str] = None
     SMTP_USER: Optional[str] = None
     SMTP_PASS: Optional[str] = None
+
+    # Third Party
+    WISTIA_API_TOKEN: Optional[str] = None
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:

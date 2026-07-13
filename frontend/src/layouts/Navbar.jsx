@@ -102,7 +102,7 @@ const Navbar = () => {
           alignItems: 'center', 
           textDecoration: 'none',
         }} className={isMobile ? 'mobile-hidden' : ''}>
-          <img className="nav-logo" src="/bingo_logo.webp" alt="בינגו בדים" style={{ height: '70px', objectFit: 'contain', margin: '-15px -1px -15px 0' }} />
+          <img className="nav-logo" src="/bingo_logo.webp" alt="בינגו בדים" style={{ height: '40px', objectFit: 'contain', margin: '-15px -1px -15px 0' }} />
         </Link>
 
         {!isMobile && (
@@ -304,7 +304,7 @@ const Navbar = () => {
                   height: '40px', 
                   width: '50px',
                   objectFit: 'contain',
-                  transform: 'scale(1.5)',
+                  transform: 'scale(1.4)',
                   transformOrigin: 'center'
                 }} 
               />
@@ -696,7 +696,7 @@ const Navbar = () => {
                 ביטול
               </button>
               <button 
-                onClick={handleConfirmLogout}
+                onClick={handleLogout}
                 style={{
                   flex: 1,
                   padding: '0.875rem',

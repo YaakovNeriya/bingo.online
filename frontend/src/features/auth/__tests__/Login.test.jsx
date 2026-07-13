@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
-import Login from '../Login';
+import Login from '../views/Login';
 
 // Mock dependencies
 vi.mock('@react-oauth/google', () => ({

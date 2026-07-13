@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Numeric, DateTime
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -8,6 +8,7 @@ class Region(Base):
     name = Column(String(50), unique=True, nullable=False)
     shipping_cost = Column(Numeric(10, 2), nullable=False)
     delivery_days = Column(Integer, nullable=False)
+    deadline_date = Column(DateTime, nullable=True)
 
 class User(Base):
     __tablename__ = "users"

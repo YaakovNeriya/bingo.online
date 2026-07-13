@@ -6,8 +6,9 @@ class ProductType(Base):
     __tablename__ = "product_types"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), unique=True, index=True, nullable=False)
+    display_order = Column(Integer, default=0, index=True)
     
-    product_models = relationship("ProductModel", back_populates="product_type", cascade="all, delete-orphan", passive_deletes=True)
+    product_models = relationship("ProductModel", back_populates="product_type", cascade="all, delete-orphan", passive_deletes=True, order_by="ProductModel.display_order.asc(), ProductModel.id.asc()")
 
 class ProductModel(Base):
     __tablename__ = "product_models"
@@ -17,9 +18,10 @@ class ProductModel(Base):
     base_price = Column(Numeric(10, 2), nullable=False)
     fabric_height = Column(Numeric(10, 2), default=1.5, nullable=False)
     is_active = Column(Boolean, default=True)
+    display_order = Column(Integer, default=0, index=True)
 
     product_type = relationship("ProductType", back_populates="product_models")
-    color_skus = relationship("ColorSKU", back_populates="product_model", cascade="all, delete-orphan", passive_deletes=True)
+    color_skus = relationship("ColorSKU", back_populates="product_model", cascade="all, delete-orphan", passive_deletes=True, order_by="ColorSKU.display_order.asc(), ColorSKU.id.asc()")
 
 class ColorSKU(Base):
     __tablename__ = "color_skus"
@@ -31,6 +33,7 @@ class ColorSKU(Base):
     specific_price = Column(Numeric(10, 2), nullable=True)
     image_urls = Column(JSON, nullable=True, default=list)
     is_active = Column(Boolean, default=True)
+    display_order = Column(Integer, default=0, index=True)
 
     product_model = relationship("ProductModel", back_populates="color_skus")
 

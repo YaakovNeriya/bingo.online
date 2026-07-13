@@ -1,7 +1,5 @@
 # 🧵 Bingo Fabrics - E-Commerce Platform
 
-[עברית למטה 👇](#hebrew-version)
-
 An advanced, luxurious e-commerce platform built exclusively for "Bingo Fabrics".
 The system features a modern "Glassmorphism" UI, rich micro-animations (such as blooming products and a spinning cart coin), and distinct "Day & Night" modes with realistic scrolling fabric textures.
 
@@ -113,4 +111,3 @@ Use the `docker-compose.prod.yml` file on your live server (e.g., Oracle Cloud),
 
 **להפעלת השרת החי (Production):**
 יש להשתמש בקובץ `docker-compose.prod.yml` על גבי השרת שלך (כגון Oracle Cloud), אשר מושך ישירות את הגרסאות המוכנות מ-Docker Hub ומריץ אותן בסביבת ייצור מאובטחת באמצעות שרת Nginx.
-# bingo.online

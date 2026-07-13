@@ -28,7 +28,7 @@ class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    status = Column(String(50), default="Received", nullable=False)
+    status = Column(String(50), default="order_unpaid", nullable=False)
     total_price = Column(Numeric(10, 2), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
 
@@ -43,6 +43,8 @@ class OrderItem(Base):
     length_meters = Column(Numeric(10, 2), nullable=False)
     units = Column(Integer, nullable=False, default=1)
     price_at_purchase = Column(Numeric(10, 2), nullable=False)
+    historical_product_name = Column(String(255), nullable=True)
+    historical_color_name = Column(String(255), nullable=True)
 
     order = relationship("Order", back_populates="items")
     color_sku = relationship("ColorSKU")

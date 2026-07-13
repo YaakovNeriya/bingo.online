@@ -11,13 +11,15 @@
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
+    "@sentry/react": "^10.64.0",
     "axios": "^1.6.8",
+    "date-fns": "^4.4.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.364.0",
     "react": "^18.2.0",
+    "react-datepicker": "^9.1.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^5.6.0",
     "react-router-dom": "^6.22.3",
     "react-zoom-pan-pinch": "^4.0.3"
   },

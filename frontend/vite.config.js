@@ -8,6 +8,23 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/setupTests.js',
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react/') || id.includes('react-dom/') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@sentry')) {
+              return 'sentry-vendor';
+            }
+            return 'vendor'; // all other external packages
+          }
+        }
+      }
+    }
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,

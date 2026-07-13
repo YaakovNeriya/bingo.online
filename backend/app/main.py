@@ -5,5 +5,6 @@ import os
 
 app = create_app()
 
-os.makedirs("/app/uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
+upload_dir = os.getenv("UPLOAD_DIR", "uploads")
+os.makedirs(upload_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")

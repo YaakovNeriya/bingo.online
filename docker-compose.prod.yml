@@ -1,8 +1,16 @@
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "3m"
+    max-file: "5"
+
 services:
   db:
     image: mysql:8.0
     container_name: fabric_db
     restart: always
+    command: --log_error_verbosity=2
+    logging: *default-logging
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -10,16 +18,34 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5m
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+      start_interval: 5s
 
   redis:
     image: redis:7.2-alpine
     container_name: fabric_redis
     restart: always
+    command: redis-server --loglevel warning
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5m
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
 
   backend:
     image: ${DOCKERHUB_USERNAME}/bingo-backend:latest
     container_name: fabric_backend
     restart: always
+    command: gunicorn -c gunicorn_conf.py app.main:app
+    logging: *default-logging
     environment:
       - DB_HOST=db
       - DB_PORT=3306
@@ -30,27 +56,83 @@ services:
       - DB_NAME=${DB_NAME}
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY}
-      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - ACCESS_TOKEN_EXPIRE_MINUTES=20160
       - STORAGE_ENV=prod
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
+      - CORS_ORIGINS=https://bingo.online,https://www.bingo.online
     volumes:
       - backend_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')\""]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db_backup:
+    image: ${DOCKERHUB_USERNAME}/bingo-backend:latest
+    container_name: fabric_backup
+    restart: always
+    logging: *default-logging
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    volumes:
+      - ./credentials.json:/app/credentials.json
+      - ./token.json:/app/token.json
+      - ./backups:/app/backups
     depends_on:
       - db
-      - redis
+    command: python run_backup_scheduler.py
 
   frontend:
     image: ${DOCKERHUB_USERNAME}/bingo-frontend:latest
     container_name: fabric_frontend
     restart: always
+    logging: *default-logging
     ports:
       - "80:80"
+    volumes:
+      - backend_uploads:/app/uploads
     depends_on:
       - backend
+      - beszel
+
+  beszel:
+    image: henrygd/beszel:latest
+    container_name: fabric_beszel_hub
+    restart: always
+    logging: *default-logging
+    environment:
+      - APP_URL=https://monitor.bingo.online
+    volumes:
+      - beszel_data:/beszel_data
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: fabric_beszel_agent
+    restart: always
+    network_mode: host
+    logging: *default-logging
+    environment:
+      - PORT=45876
+      - KEY=placeholder_key_to_be_replaced
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 volumes:
   db_data:
   backend_uploads:
+  beszel_data:

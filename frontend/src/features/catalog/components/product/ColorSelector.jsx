@@ -1,0 +1,82 @@
+import React from 'react';
+import SmartImage from '../../../../components/ui/SmartImage';
+
+const ColorSelector = ({ productModel, selectedSku, setSelectedSku, setCurrentImageIndex }) => {
+  return (
+    <div>
+      <h4 style={{ marginBottom: '0.5rem' }}>בחר צבע:</h4>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        {productModel.color_skus.map(sku => {
+          const isOutOfStock = sku.stock_meters <= 0;
+          const isSelected = selectedSku?.id === sku.id;
+          const lastImage = sku.image_urls && sku.image_urls.length > 0 ? sku.image_urls[sku.image_urls.length - 1] : null;
+          
+          return (
+            <div 
+              key={sku.id} 
+              onClick={() => { setSelectedSku(sku); setCurrentImageIndex(0); }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.4rem',
+                cursor: 'pointer',
+                opacity: isOutOfStock ? 0.5 : 1,
+                transition: 'transform 0.2s',
+                transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+              }}
+              title={isOutOfStock ? 'אזל מהמלאי' : `מלאי: ${sku.stock_meters}מ'`}
+            >
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                border: isSelected ? '3px solid #1A365D' : '2px solid #cbd5e1',
+                boxShadow: isSelected ? '0 4px 12px rgba(26, 54, 93, 0.3)' : '0 2px 5px rgba(0,0,0,0.1)',
+                position: 'relative',
+                overflow: 'hidden',
+                backgroundColor: '#f1f5f9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}>
+                {lastImage ? (
+                  <SmartImage 
+                    src={lastImage} 
+                    alt={sku.color_name} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
+                  />
+                ) : (
+                  <span style={{ fontSize: '1rem', color: 'var(--text-light)' }}>{sku.color_name.substring(0, 2)}</span>
+                )}
+                
+                {isOutOfStock && (
+                  <div style={{ 
+                    position: 'absolute', 
+                    width: '120%', 
+                    height: '3px', 
+                    backgroundColor: 'rgba(239, 68, 68, 0.8)', 
+                    transform: 'rotate(-45deg)' 
+                  }} />
+                )}
+              </div>
+              <span style={{ 
+                fontSize: '0.95rem', 
+                fontWeight: isSelected ? 'bold' : 'normal',
+                color: isSelected ? '#1A365D' : 'var(--text-color)',
+                textAlign: 'center',
+                maxWidth: '74px',
+                lineHeight: '1.2'
+              }}>
+                {sku.color_name}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default ColorSelector;

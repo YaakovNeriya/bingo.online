@@ -43,11 +43,6 @@ from typing import List, Dict, Any
 class OrderStatusUpdate(BaseModel):
     status: str
 
-class SalesReportOut(BaseModel):
-    total_revenue: Decimal
-    total_orders: int
-    best_sellers: List[Dict[str, Any]]
-    traffic_sources: Dict[str, int] = {}
 
 class SiteSettingUpdate(BaseModel):
     value: str
@@ -58,21 +53,26 @@ class SiteSettingOut(BaseModel):
     description: Optional[str] = None
 
 from app.domains.users.schemas import RegionOut, UserOut
+from app.domains.orders.schemas import OrderOut
+
+class AdminOrderOut(OrderOut):
+    user: Optional[UserOut] = None
 
 class RegionWithCustomerCount(RegionOut):
     customer_count: int
 
 class CustomerWithOrderCount(UserOut):
     order_count: int
+    cart_items_count: int = 0
 
 class SortedCustomerItem(BaseModel):
     product_name: str
     color_name: str
     category: str
     sku: Optional[str] = None
-    length_meters: float
+    length_meters: Decimal
     units: int
-    price: float
+    price: Decimal
     status: str
 
 class SortedCustomer(BaseModel):
@@ -83,4 +83,56 @@ class SortedCustomer(BaseModel):
     last_name: Optional[str] = ""
     phone: Optional[str] = None
     items: List[SortedCustomerItem]
-    total: float
+    total: Decimal
+
+from datetime import datetime
+
+class SeasonArchiveCreate(BaseModel):
+    season_name: str
+    archive_data: Any
+
+class SeasonArchiveOut(BaseModel):
+    id: int
+    season_name: str
+    archive_data: Any
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class SeasonArchiveListOut(BaseModel):
+    id: int
+    season_name: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class SeasonItemStat(BaseModel):
+    product_name: str
+    color_name: str
+    category: str
+    sku: Optional[str] = None
+    total_meters: Decimal
+    total_revenue: Decimal
+    total_orders: int
+
+class SeasonStatsOut(BaseModel):
+    total_meters: Decimal
+    total_revenue: Decimal
+    total_items: int
+    items_stats: List[SeasonItemStat]
+
+class AuditLogOut(BaseModel):
+    id: int
+    admin_id: int
+    impersonated_user_id: Optional[int] = None
+    endpoint: Optional[str] = None
+    timestamp: datetime
+    action: str
+    entity_type: Optional[str] = None
+    entity_id: Optional[int] = None
+    changes: Optional[dict] = None
+
+class ReorderRequest(BaseModel):
+    direction: str # "up" or "down"

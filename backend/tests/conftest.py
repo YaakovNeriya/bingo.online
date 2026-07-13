@@ -8,6 +8,10 @@ from app.main import app
 from app.db.base import Base
 from app.core.config import settings
 from app.db.database import get_db
+from app.core.rate_limit import limiter
+
+# Disable rate limiting for test suite execution
+limiter.enabled = False
 
 
 

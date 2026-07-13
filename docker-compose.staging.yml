@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: fabric_staging_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_NAME:-fabric_store}
+      MYSQL_USER: ${DB_USER:-fabric_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "3308:3306"
+    volumes:
+      - db_data_staging:/var/lib/mysql
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: fabric_staging_redis
+    restart: always
+    ports:
+      - "6380:6379"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: fabric_staging_backend
+    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8001:8000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER:-fabric_user}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - DB_NAME=${DB_NAME_STAGING:-fabric_store_staging}
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-testsecretkey}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      - STORAGE_ENV=${STORAGE_ENV:-dev}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    volumes:
+      - ./backend:/app
+      - backend_uploads_staging:/app/uploads
+    depends_on:
+      - db
+      - redis
+
+  db_backup:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fabric_staging_backup
+    restart: always
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER:-fabric_user}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - DB_NAME=${DB_NAME_STAGING:-fabric_store_staging}
+    volumes:
+      - ./backend:/app
+      - ./credentials.json:/app/credentials.json
+      - ./token.json:/app/token.json
+    depends_on:
+      - db
+    command: python run_backup_scheduler.py
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: fabric_staging_frontend
+    restart: always
+    command: npm run dev -- --host 0.0.0.0
+    ports:
+      - "5174:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8001
+    depends_on:
+      - backend
+
+volumes:
+  db_data_staging:
+  backend_uploads_staging:

@@ -35,3 +35,10 @@ class ProductTypeOut(BaseModel):
 
 class TrackVisitCreate(BaseModel):
     source: str
+
+class SearchResultOut(BaseModel):
+    id: int
+    name: str
+    type_name: str
+    price: Decimal
+    image_url: Optional[str] = None
