@@ -68,6 +68,7 @@ class CheckoutRequest(BaseModel):
 
 class OrderItemOut(BaseModel):
     id: int
+    color_sku_id: Optional[int] = None
     length_meters: Decimal
     units: int
     price_at_purchase: Decimal
