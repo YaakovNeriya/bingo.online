@@ -24,3 +24,4 @@ phonenumbers==9.0.34
 gunicorn
 sentry-sdk[fastapi]
 httpx
+python-dateutil

@@ -15,7 +15,7 @@ async def test_register_user(client: AsyncClient, db_session):
             "password": "password123",
             "first_name": "Test",
             "last_name": "User",
-            "phone": "0501234567",
+            "phone": "0528765432",
             "region_id": region.id
         }
     )
@@ -36,7 +36,7 @@ async def test_register_duplicate_email(client: AsyncClient, db_session):
         "password": "password123",
         "first_name": "Test2",
         "last_name": "User2",
-        "phone": "0501234567",
+        "phone": "0528765432",
         "region_id": region.id
     }
     
@@ -61,7 +61,7 @@ async def test_login_cookie(client: AsyncClient, db_session):
         "password": "password123",
         "first_name": "Cookie",
         "last_name": "Monster",
-        "phone": "0501234567",
+        "phone": "0528765432",
         "region_id": region.id
     }
     
@@ -97,7 +97,7 @@ async def test_update_user_profile(client: AsyncClient, db_session):
         "password": "password123",
         "first_name": "Before",
         "last_name": "User",
-        "phone": "0501111111",
+        "phone": "0547654321",
         "region_id": region1.id
     }
     
@@ -111,7 +111,7 @@ async def test_update_user_profile(client: AsyncClient, db_session):
     update_payload = {
         "first_name": "After",
         "last_name": "Updated",
-        "phone": "0502222222",
+        "phone": "0509876543",
         "region_id": region2.id
     }
     response = await client.put("/api/v1/users/me", json=update_payload)
@@ -119,7 +119,7 @@ async def test_update_user_profile(client: AsyncClient, db_session):
     data = response.json()
     assert data["first_name"] == "After"
     assert data["last_name"] == "Updated"
-    assert data["phone"] == "0502222222"
+    assert data["phone"] == "0509876543"
     assert data["region_id"] == region2.id
 
 @pytest.mark.asyncio
@@ -134,7 +134,7 @@ async def test_update_user_password(client: AsyncClient, db_session):
         "password": "old_password",
         "first_name": "Pass",
         "last_name": "Change",
-        "phone": "0501111111",
+        "phone": "0547654321",
         "region_id": region.id
     }
     
