@@ -74,6 +74,8 @@ services:
       - "80:80"
     environment:
       - VITE_API_URL=http://localhost:8001
+    volumes:
+      - backend_uploads_staging:/app/uploads
     depends_on:
       - backend
 
