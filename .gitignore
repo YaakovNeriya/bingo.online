@@ -19,6 +19,7 @@ env/
 # Environment variables
 .env
 .env.local
+project_secrets.md
 
 # Docker volumes and local uploads
 uploads/
