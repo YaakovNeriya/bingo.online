@@ -55,7 +55,6 @@ jobs:
             VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Copy docker-compose file to VPS
-        if: ${{ secrets.VPS_HOST != '' }}
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -65,9 +64,8 @@ jobs:
           target: "~/bingo.online"
 
       - name: Deploy to VPS and Set Secrets
-        if: ${{ secrets.VPS_HOST != '' }}
         uses: appleboy/ssh-action@v1.0.3
-        # This step will run only if VPS_HOST is defined.
+        # This step will run to deploy to VPS
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
