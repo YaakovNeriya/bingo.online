@@ -113,7 +113,9 @@ jobs:
             SMTP_USER=${{ secrets.SMTP_USER }}
             SMTP_PASS=${{ secrets.SMTP_PASS }}
             EOF
-            
+            # Login to Docker Hub in case the repository is private
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
             # Pull the latest images built by this action
             sudo docker compose -f docker-compose.prod.yml pull
             
