@@ -1,16 +1,16 @@
 name: Build Production
 
 on:
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - 'docker-compose*.yml'
-      - '**/*.md'
-      - '.gitignore'
-      - '.github/workflows/test.yml'
-      - 'backend/tests/**'
-      - 'backend/pytest.ini'
-      - 'backend/requirements-dev.txt'
+  # push:
+  #   branches: [ "main" ]
+  #   paths-ignore:
+  #     - 'docker-compose*.yml'
+  #     - '**/*.md'
+  #     - '.gitignore'
+  #     - '.github/workflows/test.yml'
+  #     - 'backend/tests/**'
+  #     - 'backend/pytest.ini'
+  #     - 'backend/requirements-dev.txt'
   workflow_dispatch:
 
 jobs:
