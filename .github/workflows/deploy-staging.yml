@@ -14,8 +14,14 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+
   build_staging:
     name: Build Staging
+    needs: test
     runs-on: ubuntu-latest
     
     steps:
@@ -40,6 +46,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile.prod
           push: true
+          # platforms: linux/amd64,linux/arm64
           platforms: linux/amd64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:staging
 
@@ -49,6 +56,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile.prod
           push: true
+          # platforms: linux/amd64,linux/arm64
           platforms: linux/amd64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:staging
           build-args: |
