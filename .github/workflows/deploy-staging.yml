@@ -70,7 +70,7 @@ jobs:
           username: ${{ secrets.STAGING_VPS_USERNAME }}
           key: ${{ secrets.STAGING_VPS_SSH_KEY }}
           source: "docker-compose.staging.yml"
-          target: "~/bingo.online.staging"
+          target: "bingo.online.staging"
 
       - name: Deploy to VPS and Set Secrets
         uses: appleboy/ssh-action@v1.0.3
@@ -93,7 +93,7 @@ jobs:
             # Set default path if not provided
             DEPLOY_PATH="${{ secrets.STAGING_VPS_DEPLOY_PATH }}"
             if [ -z "$DEPLOY_PATH" ]; then
-              DEPLOY_PATH="~/bingo.online.staging"
+              DEPLOY_PATH="$HOME/bingo.online.staging"
             fi
             
             # Create directory if it doesn't exist
