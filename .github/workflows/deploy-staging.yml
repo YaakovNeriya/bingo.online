@@ -4,7 +4,6 @@ on:
   push:
     branches: [ "staging" ]
     paths-ignore:
-      - 'docker-compose*.yml'
       - '**/*.md'
       - '.gitignore'
       - '.github/workflows/test.yml'
