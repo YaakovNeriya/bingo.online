@@ -1,8 +1,8 @@
-name: Build and Push to Docker Hub
+name: Build Production
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
     paths-ignore:
       - 'docker-compose*.yml'
       - '**/*.md'
@@ -14,7 +14,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build_production:
+    name: Build Production
     runs-on: ubuntu-latest
     
     steps:
@@ -71,12 +72,24 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            # Set PATH so docker command is found in non-interactive shell
+            export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/snap/bin
+
+            # Ensure Docker is installed (automatically installs if missing)
+            if ! command -v docker &> /dev/null; then
+              curl -fsSL https://get.docker.com -o get-docker.sh
+              sudo sh get-docker.sh
+              sudo usermod -aG docker $USER
+            fi
+
             # Set default path if not provided
             DEPLOY_PATH="${{ secrets.VPS_DEPLOY_PATH }}"
             if [ -z "$DEPLOY_PATH" ]; then
               DEPLOY_PATH="~/bingo.online"
             fi
             
+            # Create directory if it doesn't exist
+            mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
             
             # Plant the .env file with secrets from GitHub
@@ -94,9 +107,8 @@ jobs:
             SMTP_PASS=${{ secrets.SMTP_PASS }}
             EOF
             
-            # Ensure docker-compose.prod.yml is there (You should scp it or git clone it beforehand)
             # Pull the latest images built by this action
-            docker compose -f docker-compose.prod.yml pull
+            sudo docker compose -f docker-compose.prod.yml pull
             
             # Restart the services
-            docker compose -f docker-compose.prod.yml up -d
+            sudo docker compose -f docker-compose.prod.yml up -d
