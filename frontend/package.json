@@ -13,6 +13,7 @@
     "@react-oauth/google": "^0.13.5",
     "@sentry/react": "^10.64.0",
     "axios": "^1.6.8",
+    "browser-image-compression": "^2.0.2",
     "date-fns": "^4.4.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",

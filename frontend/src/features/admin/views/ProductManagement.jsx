@@ -151,10 +151,13 @@ const ProductManagement = ({ editSkuId }) => {
 
     setUploading(true);
     try {
+      const { compressImageClientSide } = await import('../../../utils/imageCompression');
       const newUrls = [];
       for (const file of files) {
+        const compressedFile = await compressImageClientSide(file);
+        
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', compressedFile);
         const res = await client.post('/admin/upload-image?aspect_ratio=1:1', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });

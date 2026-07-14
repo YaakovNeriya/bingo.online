@@ -126,7 +126,7 @@ const WistiaMediaModal = ({ isOpen, onClose, onSelect }) => {
           <div>
             <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-color)' }}>ספריית סרטונים</h3>
             <span style={{ fontSize: '0.9rem', color: '#b43c50ff', fontWeight: 'bold', display: 'block', marginTop: '0.1rem' }}>
-               הסרטון צריך להיות HD ולא יותר
+               הסרטון צריך להיות HD ולא יותר מ- 15 שניות
             </span>
           </div>
           <button onClick={onClose} style={{

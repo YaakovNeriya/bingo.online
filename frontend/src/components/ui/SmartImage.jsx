@@ -91,7 +91,8 @@ const SmartImage = ({ src, alt, style, className, hidePlayIcon = false, eager = 
         playerNode.setAttribute('autoplay', 'true');
         // Since we are moving it to the lightbox, re-enable play buttons/controls
         playerNode.removeAttribute('big-play-button');
-        playerNode.removeAttribute('muted'); // Let it play sound if possible, though browsers might block autoplay sound
+        playerNode.muted = false;
+        playerNode.removeAttribute('muted');
         
         playerNode.style.width = '100%';
         playerNode.style.height = '100%';

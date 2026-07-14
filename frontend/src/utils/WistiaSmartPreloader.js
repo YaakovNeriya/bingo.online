@@ -62,8 +62,6 @@ class WistiaPreloadManager {
     const player = document.createElement('wistia-player');
     player.setAttribute('media-id', mediaId);
     player.setAttribute('preload', 'auto');
-    // Ensure it's muted in the background just in case
-    player.setAttribute('muted', 'true');
     // Hide controls during preload
     player.setAttribute('big-play-button', 'false');
 

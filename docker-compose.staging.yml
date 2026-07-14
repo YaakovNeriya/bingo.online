@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
-      MYSQL_DATABASE: ${DB_NAME:-fabric_store}
+      MYSQL_DATABASE: ${DB_NAME_STAGING:-fabric_store_staging}
       MYSQL_USER: ${DB_USER:-fabric_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
@@ -27,6 +27,7 @@ services:
     ports:
       - "8001:8000"
     environment:
+      - FRONTEND_URL=http://35.231.4.62
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=${DB_USER:-fabric_user}

@@ -59,8 +59,10 @@ const About = () => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
+    const { compressImageClientSide } = await import('../../../utils/imageCompression');
+    const compressedFile = await compressImageClientSide(file);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', compressedFile);
     try {
       const res = await client.post('/admin/upload-image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
