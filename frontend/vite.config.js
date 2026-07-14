@@ -9,7 +9,24 @@ export default defineConfig({
     setupFiles: './src/setupTests.js',
   },
   build: {
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': [
+            'react',
+            'react-dom',
+            'react-router-dom',
+            '@react-oauth/google',
+            'react-datepicker',
+            'react-zoom-pan-pinch',
+            'embla-carousel-react',
+            'embla-carousel-autoplay',
+          ],
+          'sentry': ['@sentry/react'],
+        }
+      }
+    }
   },
   server: {
     host: '0.0.0.0',

@@ -47,7 +47,9 @@ jobs:
           push: true
           # platforms: linux/amd64,linux/arm64
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:prod-build-${{ github.run_number }}
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
@@ -57,7 +59,9 @@ jobs:
           push: true
           # platforms: linux/amd64,linux/arm64
           platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:prod-build-${{ github.run_number }}
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL_PROD }}
             VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
