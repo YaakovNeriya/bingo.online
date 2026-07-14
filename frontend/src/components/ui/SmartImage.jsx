@@ -119,6 +119,9 @@ const SmartImage = ({ src, alt, style, className, hidePlayIcon = false, eager = 
           ref={containerRef}
           style={{ ...style, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
           className={className}
+          onClick={(e) => {
+            if (props.onClick) props.onClick(e);
+          }}
         >
         </div>
       );
