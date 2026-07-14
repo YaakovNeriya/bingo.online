@@ -23,11 +23,9 @@ services:
       - "6380:6379"
 
   backend:
-    build:
-      context: ./backend
+    image: ${DOCKERHUB_USERNAME:-yaakov94}/bingo-backend:staging
     container_name: fabric_staging_backend
     restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8001:8000"
     environment:
@@ -47,16 +45,13 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
     volumes:
-      - ./backend:/app
       - backend_uploads_staging:/app/uploads
     depends_on:
       - db
       - redis
 
   db_backup:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME:-yaakov94}/bingo-backend:staging
     container_name: fabric_staging_backup
     restart: always
     environment:
@@ -66,7 +61,6 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-secret}
       - DB_NAME=${DB_NAME_STAGING:-fabric_store_staging}
     volumes:
-      - ./backend:/app
       - ./credentials.json:/app/credentials.json
       - ./token.json:/app/token.json
     depends_on:
@@ -74,16 +68,11 @@ services:
     command: python run_backup_scheduler.py
 
   frontend:
-    build:
-      context: ./frontend
+    image: ${DOCKERHUB_USERNAME:-yaakov94}/bingo-frontend:staging
     container_name: fabric_staging_frontend
     restart: always
-    command: npm run dev -- --host 0.0.0.0
     ports:
-      - "5174:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "5174:80"
     environment:
       - VITE_API_URL=http://localhost:8001
     depends_on:
