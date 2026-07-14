@@ -54,6 +54,16 @@ jobs:
             VITE_API_URL=${{ secrets.VITE_API_URL_STAGING }}
             VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
+      - name: Copy docker-compose file to VPS
+        if: ${{ secrets.STAGING_VPS_HOST != '' }}
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_VPS_HOST }}
+          username: ${{ secrets.STAGING_VPS_USERNAME }}
+          key: ${{ secrets.STAGING_VPS_SSH_KEY }}
+          source: "docker-compose.staging.yml"
+          target: "~/bingo.online.staging"
+
       - name: Deploy to VPS and Set Secrets
         if: ${{ secrets.STAGING_VPS_HOST != '' }}
         uses: appleboy/ssh-action@v1.0.3
@@ -69,8 +79,6 @@ jobs:
               DEPLOY_PATH="~/bingo.online.staging"
             fi
             
-            # Create directory if it doesn't exist
-            mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
             
             # Plant the .env file with secrets from GitHub
