@@ -20,7 +20,7 @@ export const RegionCard = ({
   customerOrders
 }) => {
   return (
-    <div style={{
+    <div className="region-card-outer" style={{
       background: 'var(--glass-bg)',
       border: '1px solid var(--primary-color)',
       borderRadius: '12px',
@@ -223,7 +223,7 @@ export const RegionCard = ({
                             </span>
                           </div>
                           <div style={{ fontWeight: 'bold', color: 'var(--text-color)', fontSize: '0.95rem', minWidth: '70px', textAlign: 'left' }}>
-                            {item.price.toFixed(2)}₪
+                            {Number(item.price || 0).toFixed(2)}₪
                           </div>
                           <span style={{
                             ...getStatusStyle(item.status),
@@ -257,7 +257,7 @@ export const RegionCard = ({
                   overflow: 'hidden',
                   boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
                 }}>
-                  <div
+                  <div className="customer-row-header"
                     style={{
                       padding: '1.25rem',
                       display: 'flex',
@@ -266,9 +266,9 @@ export const RegionCard = ({
                       background: expandedCustomer === customer.id ? '#f1f5f9' : 'white'
                     }}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="customer-row-details" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {/* Top row: Name & Orders */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                      <div className="customer-row-title" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <User size={20} color="#475569" />
                           <strong style={{ fontSize: '1.15rem', color: 'var(--text-color)' }}>{customer.first_name} {customer.last_name}</strong>
@@ -285,13 +285,13 @@ export const RegionCard = ({
                         )}
                       </div>
                       {/* Bottom row: Contact info */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', color: 'var(--text-light)', fontSize: '0.95rem', paddingRight: '2.25rem' }}>
+                      <div className="customer-row-contact" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', color: 'var(--text-light)', fontSize: '0.95rem', paddingRight: '2.25rem' }}>
                         <span>{customer.phone || 'אין טלפון'}</span>
-                        <span style={{ color: 'var(--text-light)', display: customer.phone ? 'inline' : 'none' }}>|</span>
+                        <span className="separator" style={{ color: 'var(--text-light)', display: customer.phone ? 'inline' : 'none' }}>|</span>
                         <span>{customer.email}</span>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <div className="customer-row-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <button
                         onClick={() => handleImpersonate(customer)}
                         title="היכנס לעריכת עגלת לקוח"
@@ -364,7 +364,7 @@ export const RegionCard = ({
                                   </span>
                                 </div>
                                 <div style={{ fontWeight: 'bold', fontSize: '1.3rem', color: 'var(--success-color)', display: 'flex', alignItems: 'center' }}>
-                                  {order.total_price}₪
+                                  {Number(order.total_price || 0).toFixed(2)}₪
                                 </div>
                               </div>
 
@@ -401,7 +401,7 @@ export const RegionCard = ({
 
                                     {/* Right: Price */}
                                     <div style={{ fontWeight: 'bold', color: 'var(--text-color)', fontSize: '1.1rem', textAlign: 'left', minWidth: '70px' }}>
-                                      {item.price_at_purchase}₪
+                                      {Number(item.price_at_purchase || 0).toFixed(2)}₪
                                     </div>
                                   </div>
                                 ))}

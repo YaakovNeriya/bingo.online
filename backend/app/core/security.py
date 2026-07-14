@@ -73,7 +73,8 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db),
     except Exception:
         raise credentials_exception
     
-    stmt = select(User).where(User.id == int(user_id))
+    from sqlalchemy.orm import selectinload
+    stmt = select(User).options(selectinload(User.region)).where(User.id == int(user_id))
     result = await db.execute(stmt)
     user = result.scalars().first()
     if user is None:
@@ -83,7 +84,7 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db),
     if impersonate_id and user.is_superuser:
         try:
             impersonate_id = int(impersonate_id)
-            stmt_imp = select(User).where(User.id == impersonate_id)
+            stmt_imp = select(User).options(selectinload(User.region)).where(User.id == impersonate_id)
             res_imp = await db.execute(stmt_imp)
             impersonated_user = res_imp.scalars().first()
             if impersonated_user:

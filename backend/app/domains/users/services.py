@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.domains.users.models import User
 from app.domains.users.schemas import UserCreate, UserUpdate
 from app.core.security import get_password_hash, verify_password
@@ -8,7 +9,7 @@ import string
 import secrets
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
-    stmt = select(User).where(User.email == email)
+    stmt = select(User).options(selectinload(User.region)).where(User.email == email)
     result = await db.execute(stmt)
     return result.scalars().first()
 
@@ -23,8 +24,9 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
             if user_in.password:
                 user.hashed_password = get_password_hash(user_in.password)
             await db.commit()
-            await db.refresh(user)
-            return user
+            stmt = select(User).options(selectinload(User.region)).where(User.id == user.id)
+            result = await db.execute(stmt)
+            return result.scalars().first()
         else:
             raise AppException(status_code=400, detail="The user with this email already exists in the system.")
     
@@ -42,8 +44,11 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     )
     db.add(db_obj)
     await db.commit()
-    await db.refresh(db_obj)
-    return db_obj
+    
+    # Re-fetch the user with region eagerly loaded to prevent MissingGreenlet in Pydantic serialization
+    stmt = select(User).options(selectinload(User.region)).where(User.id == db_obj.id)
+    result = await db.execute(stmt)
+    return result.scalars().first()
 
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
     user = await get_user_by_email(db, email=email)
@@ -104,5 +109,6 @@ async def update_user(db: AsyncSession, user: User, user_in: UserUpdate) -> User
         user.hashed_password = get_password_hash(user_in.password)
         
     await db.commit()
-    await db.refresh(user)
-    return user
+    stmt = select(User).options(selectinload(User.region)).where(User.id == user.id)
+    result = await db.execute(stmt)
+    return result.scalars().first()

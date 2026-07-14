@@ -102,7 +102,15 @@ services:
     container_name: fabric_frontend
     restart: always
     # WARNING: Using build & preview locally means you lose hot-reloading! You must restart the container to see code changes.
+    # docker restart fabric_frontend
+    # docker logs -f fabric_frontend
+    # docker compose up -d frontend
+
+    # To run in production preview mode, use:
     command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
+    # To run in development mode (with HMR / hot-reloading), use:
+    # command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    
     ports:
       - "5173:5173"
     volumes:

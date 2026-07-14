@@ -13,7 +13,7 @@ const ThemeToggle = ({ style }) => {
   };
 
   return (
-    <label htmlFor="theme" className="theme" style={{ ...style, fontSize: '16px', cursor: 'pointer' }} dir="ltr">
+    <label htmlFor="theme" className="theme" style={{ ...style, fontSize: '14.5px', cursor: 'pointer' }} dir="ltr">
       <span className="theme__toggle-wrap">
         <input 
           id="theme" 

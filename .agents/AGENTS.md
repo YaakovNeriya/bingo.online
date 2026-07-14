@@ -82,7 +82,7 @@ All new features MUST be organized under `src/features/<feature_name>/`:
 15. **Backup Resilience:** Backups are useless if they cannot be restored. Scheduled backups must exist, and restoration must be verified periodically on a staging environment.
 
 ## General Development Philosophy
-- **Root Changes over Patches (No Band-Aids):** When the user requests a specific change, do not apply a superficial patch or workaround ("תלאי"). Instead, trace the issue to its source and implement the change from the root (e.g., updating the core component, centralizing the logic, or modifying the root infrastructure).
+- **Root Changes over Patches (No Band-Aids & Performance Purity):** When the user requests a specific change, do not apply a superficial patch or workaround ("תלאי"). Trace the issue to its source and implement the change from the root. Furthermore, **never sacrifice performance or proper architectural patterns for a "quick fix"** (e.g., bypassing Nginx and proxying static files to the backend just to avoid fixing a Docker permissions issue). Always resolve the root infrastructure issue so the system runs optimally as intended in production.
 
 ## Console Error Diagnoser Skill & The "New Order Lifecycle" Pre-Check
 **PRE-CHECK:** Before diagnosing ANY bug, console error, or 500 error, you MUST actively cross-reference the error with the comprehensive historical changes we made to the ordering process. Ask yourself: "Is this bug a side-effect of the new Cart/Order separation logic or missing schemas?"

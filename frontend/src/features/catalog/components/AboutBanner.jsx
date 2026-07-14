@@ -6,7 +6,7 @@ export const AboutBanner = ({ settings }) => {
   return (
     <div className="hide-on-mobile" style={{
       margin: '4rem 0 4rem 0',
-      padding: '4rem 2rem',
+      padding: '4rem 2rem 7rem 2rem',
       background: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url(/fabric_banner_cropped.webp) center/cover no-repeat',
       border: '1px solid var(--glass-border)',
       borderRadius: '16px',
