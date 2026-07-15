@@ -1,4 +1,4 @@
-name: Backend Tests
+name: Tests
 
 on:
   pull_request:
@@ -6,7 +6,8 @@ on:
   workflow_call:
 
 jobs:
-  test:
+  test_backend:
+    name: Backend Tests
     runs-on: ubuntu-latest
     
     services:
@@ -67,6 +68,14 @@ jobs:
           cd backend
           pytest tests/
 
+  test_frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
