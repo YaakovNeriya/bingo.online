@@ -18,7 +18,7 @@ def get_db_credentials():
 def list_backups():
     if not os.path.exists("backups"):
         print("No 'backups' directory found.")
-        return []
+        return [] 
         
     # Get all timestamp folders in backups/
     folders = [f for f in glob.glob("backups/*") if os.path.isdir(f)]
