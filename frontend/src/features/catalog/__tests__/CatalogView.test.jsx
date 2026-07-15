@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import CatalogView from '../views/CatalogView';
 import client from '../../../api/client';
 import { AuthContext } from '../../auth/AuthContext';
+import { CatalogProvider } from '../CatalogContext';
 
 vi.mock('../../../api/client', () => ({
   default: {
@@ -48,9 +49,11 @@ const mockSettings = {
 const renderWithContext = (component, user = null) => {
   return render(
     <AuthContext.Provider value={{ user }}>
-      <MemoryRouter>
-        {component}
-      </MemoryRouter>
+      <CatalogProvider>
+        <MemoryRouter>
+          {component}
+        </MemoryRouter>
+      </CatalogProvider>
     </AuthContext.Provider>
   );
 };

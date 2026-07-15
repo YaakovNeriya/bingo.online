@@ -36,16 +36,16 @@ describe('Navbar Component - Mobile Focus', () => {
     const logo = screen.getByAltText('בינגו בדים');
     expect(logo).toBeInTheDocument();
     
-    // Check if the greeting text is present and acts as a link to cart
-    const nameLink = screen.getByRole('link', { name: /Yaakov/i });
-    expect(nameLink).toBeInTheDocument();
+    // Check if the greeting text is present and acts as a link to profile
+    const nameLinks = screen.getAllByRole('link', { name: /Yaakov/i });
+    expect(nameLinks.length).toBeGreaterThan(0);
     
-    // Check if cart count bubble is inside the name link
-    expect(nameLink.textContent).toContain('3');
+    // Check if cart count bubble is rendered with the correct count
+    expect(screen.getByText('3')).toBeInTheDocument();
     
-    // Check if the greeting text is present
-    expect(screen.getByText('שלום')).toBeInTheDocument();
-    expect(screen.getByText('Yaakov')).toBeInTheDocument();
+    // Check if the greeting text is present (might be multiple due to mobile/desktop menus)
+    const greetings = screen.getAllByText(/שלום,\s*Yaakov/i);
+    expect(greetings.length).toBeGreaterThan(0);
     
     // Check logout button
     const logoutBtn = screen.getByTitle('התנתק');

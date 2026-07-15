@@ -68,7 +68,6 @@ async def delete_color_sku(
     return await services.delete_color_sku(db, sku_id)
 
 from fastapi import UploadFile, File, Query
-import shutil
 import os
 import uuid
 
@@ -193,17 +192,11 @@ async def reorder_color_sku(
 
 import asyncio
 import io
-import os
-import uuid
 from PIL import Image
-from fastapi import File, UploadFile, Query
 
-import io
-import os
-import uuid
 from typing import Optional
  
-from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import ImageOps, UnidentifiedImageError
  
 # WebP encoding effort: 0=fast/bigger file, 6=slow/smaller file.
 # This runs in a background upload job, not on the request's critical path,
@@ -312,7 +305,7 @@ async def upload_image(
     try:
         new_filename = await asyncio.to_thread(process_image_sync, image_data, aspect_ratio, upload_dir)
         return {"image_url": f"/uploads/{new_filename}"}
-    except Exception as e:
+    except Exception:
         # Fallback to direct save if Pillow fails for any reason
         ext = file.filename.split(".")[-1] if "." in file.filename else "bin"
         new_filename = f"{uuid.uuid4().hex}.{ext}"
@@ -321,7 +314,6 @@ async def upload_image(
             buffer.write(image_data)
         return {"image_url": f"/uploads/{new_filename}"}
 
-from typing import List
 from app.domains.orders import schemas as order_schemas
 
 @router.get("/orders", response_model=List[schemas.AdminOrderOut])
@@ -525,7 +517,6 @@ async def upload_wistia_video(
     return await services.upload_video_to_wistia(file)
 
 import glob
-import os
 import datetime
 from fastapi import BackgroundTasks
 import subprocess

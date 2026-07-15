@@ -13,17 +13,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': [
-            'react',
-            'react-dom',
-            'react-router-dom',
-            '@react-oauth/google',
-            'react-datepicker',
-            'react-zoom-pan-pinch',
-            'embla-carousel-react',
-            'embla-carousel-autoplay',
-          ],
-          'sentry': ['@sentry/react'],
+          'react-core': ['react', 'react-dom', 'react-router-dom'],
+          'ui-icons': ['lucide-react'],
+          'ui-carousel': ['embla-carousel-react', 'embla-carousel-autoplay'],
+          'ui-tools': ['react-datepicker', 'react-zoom-pan-pinch'],
+          'media-tools': ['browser-image-compression'],
+          'utils-vendor': ['date-fns', 'axios'],
+          'auth-vendor': ['@react-oauth/google'],
+          'sentry': ['@sentry/react']
         }
       }
     }

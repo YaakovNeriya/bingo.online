@@ -123,7 +123,7 @@ async def share_product_og(
     except Exception as e:
         og_logger.error(f"Critical failure generating OG tags for model_id {model_id}: {e}", exc_info=True)
         # Fallback minimal HTML to prevent sharing a broken link completely
-        fallback_html = f"""
+        fallback_html = """
         <!DOCTYPE html>
         <html lang="he">
         <head>

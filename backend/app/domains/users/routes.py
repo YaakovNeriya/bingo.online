@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
+from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Any, List
-from google.oauth2 import id_token
-from google.auth.transport import requests
 
 from app.db.database import get_db
 from app.domains.users import schemas, services

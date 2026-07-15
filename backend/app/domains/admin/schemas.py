@@ -11,7 +11,7 @@ class ProductModelCreate(BaseModel):
     base_price: Decimal
     fabric_height: Decimal
 
-from typing import List, Dict, Any
+from typing import List, Any
 
 class ColorSKUCreate(BaseModel):
     sku: Optional[str] = None
@@ -38,7 +38,7 @@ class ColorSKUUpdate(BaseModel):
     image_urls: Optional[List[str]] = None
     is_active: Optional[bool] = None
 
-from typing import List, Dict, Any
+from typing import List
 
 class OrderStatusUpdate(BaseModel):
     status: str

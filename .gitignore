@@ -40,3 +40,14 @@ token.json
 backups/
 *.sql.gz
 local_archives/
+
+# Security Keys
+*.pem
+staging_key.pem
+
+# Cache directories
+.ruff_cache/
+.pytest_cache/
+
+# Database dumps
+*.sql

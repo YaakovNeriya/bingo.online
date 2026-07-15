@@ -1,6 +1,4 @@
-import os
 from PIL import Image, ImageDraw
-import asyncio
 from pathlib import Path
 
 # Paths inside docker container

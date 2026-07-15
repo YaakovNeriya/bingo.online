@@ -67,15 +67,19 @@ const mockSettings = {
   minimum_order_length: '2.5'
 };
 
+import { CatalogContext } from '../../catalog/CatalogContext';
+
 const renderWithContext = (component, user = { name: 'Test User' }, fetchCartCount = vi.fn()) => {
   return render(
     <AuthContext.Provider value={{ user }}>
       <CartContext.Provider value={{ fetchCartCount }}>
-        <MemoryRouter initialEntries={['/product/101']}>
-          <Routes>
-            <Route path="/product/:modelId" element={component} />
-          </Routes>
-        </MemoryRouter>
+        <CatalogContext.Provider value={{ catalog: mockCatalog, settings: mockSettings, isFetching: false }}>
+          <MemoryRouter initialEntries={['/product/101']}>
+            <Routes>
+              <Route path="/product/:modelId" element={component} />
+            </Routes>
+          </MemoryRouter>
+        </CatalogContext.Provider>
       </CartContext.Provider>
     </AuthContext.Provider>
   );

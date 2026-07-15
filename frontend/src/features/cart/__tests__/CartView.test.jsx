@@ -61,6 +61,7 @@ describe('CartView Component', () => {
     client.get.mockImplementation((url) => {
       if (url === '/products/public/settings') return Promise.resolve({ data: { minimum_order_length: "1.0" } });
       if (url === '/orders/cart') return Promise.resolve({ data: mockCart });
+      if (url === '/orders/active') return Promise.resolve({ data: { id: -1, items: [] } });
       return Promise.resolve({ data: {} });
     });
 
@@ -77,6 +78,7 @@ describe('CartView Component', () => {
     client.get.mockImplementation((url) => {
       if (url === '/products/public/settings') return Promise.resolve({ data: { minimum_order_length: "1.0" } });
       if (url === '/orders/cart') return Promise.resolve({ data: mockCart });
+      if (url === '/orders/active') return Promise.resolve({ data: { id: -1, items: [] } });
       return Promise.resolve({ data: {} });
     });
     client.patch.mockResolvedValueOnce({ data: {} });
@@ -106,6 +108,7 @@ describe('CartView Component', () => {
     client.get.mockImplementation((url) => {
       if (url === '/products/public/settings') return Promise.resolve({ data: { minimum_order_length: "1.0" } });
       if (url === '/orders/cart') return Promise.resolve({ data: mockCart });
+      if (url === '/orders/active') return Promise.resolve({ data: { id: -1, items: [] } });
       return Promise.resolve({ data: {} });
     });
     client.delete.mockResolvedValueOnce({ data: {} });

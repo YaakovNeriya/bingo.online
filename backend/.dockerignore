@@ -18,3 +18,18 @@ token.json
 pytest.ini
 requirements-dev.txt
 local_archives/
+
+# Security and Secrets
+staging_key.pem
+project_secrets.md
+
+# Cache directories
+.ruff_cache/
+
+# User specified ignore directories
+ignore/
+.agents/
+
+# Database dumps and backups
+backups/
+*.sql
