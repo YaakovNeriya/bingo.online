@@ -116,7 +116,18 @@ jobs:
             SMTP_PORT=${{ secrets.SMTP_PORT }}
             SMTP_USER=${{ secrets.SMTP_USER }}
             SMTP_PASS=${{ secrets.SMTP_PASS }}
+            WISTIA_API_TOKEN=${{ secrets.WISTIA_API_TOKEN }}
             EOF
+            
+            # Plant the Google Drive OAuth JSON files (Important: remove any dummy directories docker might have created)
+            sudo rm -rf credentials.json token.json
+            cat <<'EOF' > credentials.json
+${{ secrets.DRIVE_CREDENTIALS_JSON }}
+EOF
+            cat <<'EOF' > token.json
+${{ secrets.DRIVE_TOKEN_JSON }}
+EOF
+
             # Login to Docker Hub in case the repository is private
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 

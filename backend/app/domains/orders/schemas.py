@@ -49,7 +49,6 @@ class CartItemOut(BaseModel):
     id: int
     length_meters: Decimal
     units: int
-    status: str
     color_sku: CartColorSKUOut
 
     class Config:

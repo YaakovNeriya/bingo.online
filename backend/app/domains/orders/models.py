@@ -19,7 +19,6 @@ class CartItem(Base):
     color_sku_id = Column(Integer, ForeignKey("color_skus.id", ondelete="CASCADE"), nullable=False)
     length_meters = Column(Numeric(10, 2), nullable=False)
     units = Column(Integer, nullable=False, default=1)
-    status = Column(String(50), default="pending", nullable=False)
 
     cart = relationship("Cart", back_populates="items")
     color_sku = relationship("ColorSKU")

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import Any
+from typing import Any, List
 
 from app.db.database import get_db
 from app.domains.admin import schemas, services
@@ -524,3 +524,51 @@ async def upload_wistia_video(
 ):
     return await services.upload_video_to_wistia(file)
 
+import glob
+import os
+import datetime
+from fastapi import BackgroundTasks
+import subprocess
+import sys
+
+def run_manual_backup():
+    try:
+        subprocess.run([sys.executable, "backup_to_drive.py"], check=True)
+    except Exception as e:
+        print(f"Manual backup failed: {e}")
+
+@router.get("/backups", response_model=List[schemas.BackupFolderOut])
+async def get_backups(
+    _ = Depends(get_current_active_superuser)
+):
+    backups_list = []
+    if os.path.exists("backups"):
+        folders = [f for f in glob.glob("backups/*") if os.path.isdir(f)]
+        folders.sort(key=os.path.getmtime, reverse=True)
+        for folder in folders:
+            name = os.path.basename(folder)
+            sql_files = glob.glob(os.path.join(folder, "*.sql.gz"))
+            tar_files = glob.glob(os.path.join(folder, "*.tar.gz"))
+            
+            db_size = os.path.getsize(sql_files[0]) if sql_files else 0
+            img_size = os.path.getsize(tar_files[0]) if tar_files else 0
+            
+            created_at = datetime.datetime.fromtimestamp(os.path.getmtime(folder)).isoformat()
+            is_valid = bool(sql_files)
+            
+            backups_list.append({
+                "name": name,
+                "db_size_bytes": db_size,
+                "images_size_bytes": img_size,
+                "created_at": created_at,
+                "is_valid": is_valid
+            })
+    return backups_list
+
+@router.post("/backups/trigger")
+async def trigger_backup(
+    background_tasks: BackgroundTasks,
+    _ = Depends(get_current_active_superuser)
+):
+    background_tasks.add_task(run_manual_backup)
+    return {"message": "Backup triggered in background"}

@@ -21,7 +21,7 @@ if __name__ == "__main__":
     logger.info("Starting Backup Scheduler... Backup will run daily at 03:00 (Asia/Jerusalem time)")
     
     scheduler = BlockingScheduler(timezone="Asia/Jerusalem")
-    scheduler.add_job(run_backup, 'cron', hour=3, minute=0)
+    scheduler.add_job(run_backup, 'cron', hour=3, minute=0, misfire_grace_time=3600)
     
     try:
         scheduler.start()

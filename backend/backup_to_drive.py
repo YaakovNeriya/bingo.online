@@ -152,7 +152,7 @@ def dump_images(timestamp):
     print(f"Starting image backup to {backup_file}...")
     
     try:
-        tar_cmd = subprocess.run(["tar", "-czf", backup_file, uploads_dir], capture_output=True)
+        tar_cmd = subprocess.run(["tar", "--force-local", "-czf", backup_file, uploads_dir], capture_output=True)
         if tar_cmd.returncode != 0:
             print(f"tar failed with code {tar_cmd.returncode}: {tar_cmd.stderr.decode('utf-8')}")
             return None
@@ -190,7 +190,7 @@ def create_subfolder(service, parent_folder_id, subfolder_name):
     return folder.get('id')
 
 def main():
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    timestamp = datetime.datetime.now().strftime("%-d-%-m-%y_%H:%M")
     backup_file = dump_database(timestamp)
     if not backup_file:
         print("Aborting database upload due to failed dump.")
@@ -218,28 +218,34 @@ def main():
         finally:
             import shutil
             import glob
-            os.makedirs("local_archives", exist_ok=True)
+            timestamp_dir = os.path.join("backups", timestamp)
+            os.makedirs(timestamp_dir, exist_ok=True)
             
             # Move DB backup
             if os.path.exists(backup_file):
-                local_path = os.path.join("local_archives", backup_file)
+                local_path = os.path.join(timestamp_dir, backup_file)
                 shutil.move(backup_file, local_path)
                 print(f"Local DB backup saved as {local_path}.")
                 
             # Move Images backup
             if images_backup_file and os.path.exists(images_backup_file):
-                local_img_path = os.path.join("local_archives", images_backup_file)
+                local_img_path = os.path.join(timestamp_dir, images_backup_file)
                 shutil.move(images_backup_file, local_img_path)
                 print(f"Local Images backup saved as {local_img_path}.")
                 
-            # Keep only the 3 most recent backups for DB and 3 for images
+            # Keep only the 3 most recent backup folders
             try:
-                for prefix in ["backup_*.sql.gz", "backup_images_*.tar.gz"]:
-                    local_backups = glob.glob(os.path.join("local_archives", prefix))
-                    local_backups.sort(key=os.path.getmtime, reverse=True)
-                    for old_backup in local_backups[3:]:
-                        os.remove(old_backup)
-                        print(f"Deleted old local backup: {old_backup}")
+                # Find all subdirectories in 'backups' that look like timestamp folders
+                all_items = glob.glob(os.path.join("backups", "*"))
+                backup_folders = [d for d in all_items if os.path.isdir(d)]
+                
+                # Sort by modification time, newest first
+                backup_folders.sort(key=os.path.getmtime, reverse=True)
+                
+                # Remove any folders older than the 3 most recent
+                for old_folder in backup_folders[3:]:
+                    shutil.rmtree(old_folder)
+                    print(f"Deleted old local backup folder: {old_folder}")
             except Exception as e:
                 print(f"Failed to cleanup old local backups: {e}")
 

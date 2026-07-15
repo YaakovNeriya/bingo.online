@@ -62,6 +62,7 @@ services:
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
+      - WISTIA_API_TOKEN=${WISTIA_API_TOKEN}
       - CORS_ORIGINS=https://bingo.online,https://www.bingo.online
     volumes:
       - backend_uploads:/app/uploads

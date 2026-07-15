@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useId } from 'react';
 
 const ThemeToggle = ({ style }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const toggleId = useId();
+  const themeId = `theme-${toggleId}`;
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -13,14 +15,14 @@ const ThemeToggle = ({ style }) => {
   };
 
   return (
-    <label htmlFor="theme" className="theme" style={{ ...style, fontSize: '14.5px', cursor: 'pointer' }} dir="ltr">
+    <label htmlFor={themeId} className="theme" style={{ ...style, fontSize: '14.5px', cursor: 'pointer' }} dir="ltr">
       <span className="theme__toggle-wrap">
         <input 
-          id="theme" 
+          id={themeId} 
           className="theme__toggle" 
           type="checkbox" 
           role="switch" 
-          name="theme" 
+          name={themeId} 
           value="dark"
           checked={theme === 'dark'}
           onChange={toggleTheme}

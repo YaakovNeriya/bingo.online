@@ -267,8 +267,7 @@ async def revert_order_to_cart(db: AsyncSession, user_id: int, order_id: int) ->
                 cart_id=cart.id,
                 color_sku_id=order_item.color_sku_id,
                 length_meters=order_item.length_meters,
-                units=order_item.units,
-                status="pending"
+                units=order_item.units
             )
             db.add(new_cart_item)
             
@@ -381,8 +380,7 @@ async def move_order_item_to_cart(db: AsyncSession, user: User, order_item_id: i
             cart_id=cart.id,
             color_sku_id=order_item.color_sku_id,
             length_meters=order_item.length_meters,
-            units=order_item.units,
-            status="pending"
+            units=order_item.units
         )
         db.add(new_cart_item)
         await db.delete(order_item)

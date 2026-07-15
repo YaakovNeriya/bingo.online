@@ -10,6 +10,7 @@ import SeasonArchives from './SeasonArchives';
 import SeasonStatistics from '../components/SeasonStatistics';
 import OrdersManagement from './OrdersManagement';
 import InventoryManagement from './InventoryManagement';
+import BackupsManagement from './BackupsManagement';
 
 const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
@@ -110,6 +111,12 @@ const AdminDashboard = () => {
           style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'archives' ? '#e8e8e8ff' : '', color: activeTab !== 'archives' ? '#475569' : '' }}>
           ארכיון
         </button>
+        <button 
+          className={`btn ${activeTab === 'backups' ? 'btn-primary' : ''}`} 
+          onClick={() => setActiveTab('backups')}
+          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'backups' ? '#e8e8e8ff' : '', color: activeTab !== 'backups' ? '#475569' : '' }}>
+          גיבויים
+        </button>
       </div>
 
 
@@ -123,6 +130,7 @@ const AdminDashboard = () => {
       {activeTab === 'statistics' && <SeasonStatistics />}
       {activeTab === 'orders' && <OrdersManagement />}
       {activeTab === 'inventory' && <InventoryManagement />}
+      {activeTab === 'backups' && <BackupsManagement />}
     </div>
   );
 };

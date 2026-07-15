@@ -45,6 +45,7 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - TZ=Asia/Jerusalem
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=${DB_USER:-fabric_user}
@@ -60,9 +61,12 @@ services:
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
+      - WISTIA_API_TOKEN=${WISTIA_API_TOKEN}
     volumes:
       - ./backend:/app
       - ./backend/uploads:/app/uploads
+      - ./credentials.json:/app/credentials.json
+      - ./token.json:/app/token.json
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')\""]
       interval: 5m
@@ -83,6 +87,7 @@ services:
     container_name: fabric_backup
     restart: always
     environment:
+      - TZ=Asia/Jerusalem
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=${DB_USER:-fabric_user}
@@ -107,9 +112,9 @@ services:
     # docker compose up -d frontend
 
     # To run in production preview mode, use:
-    command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
+    # command: sh -c "npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
     # To run in development mode (with HMR / hot-reloading), use:
-    # command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     
     ports:
       - "5173:5173"
@@ -117,7 +122,8 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - TZ=Asia/Jerusalem
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api/v1}
     depends_on:
       - backend
 

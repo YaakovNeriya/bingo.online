@@ -42,7 +42,6 @@ async def create_color_sku(db: AsyncSession, obj_in: schemas.ColorSKUCreate) -> 
     await _invalidate_catalog()
     return db_obj
 
-from typing import Optional
 
 async def update_product_type(db: AsyncSession, type_id: int, obj_in: schemas.ProductTypeUpdate) -> ProductType:
     stmt = select(ProductType).where(ProductType.id == type_id).options(selectinload(ProductType.product_models).selectinload(ProductModel.color_skus))
@@ -180,12 +179,11 @@ async def delete_color_sku(db: AsyncSession, sku_id: int):
         await _invalidate_catalog()
 
 from datetime import datetime, timedelta
-from sqlalchemy import select, func, distinct, desc
+from sqlalchemy import func
 from sqlalchemy.orm import selectinload
 from typing import List
 from app.domains.admin import schemas, models as admin_models
 from app.domains.orders.models import Order, Cart, CartItem, OrderItem
-from decimal import Decimal
 
 async def get_all_orders(db: AsyncSession):
     stmt = (
@@ -212,7 +210,7 @@ async def get_all_orders(db: AsyncSession):
     
     virtual_orders = []
     for cart in carts:
-        pending_items = [item for item in cart.items if item.status == 'pending']
+        pending_items = [item for item in cart.items]
         if pending_items:
             total_price = Decimal("0.0")
             cart_items_out = []
@@ -354,8 +352,6 @@ async def delete_region(db: AsyncSession, region_id: int):
 from app.domains.users.models import User
 from app.domains.orders.models import Order
 from app.domains.orders import models as order_models
-from sqlalchemy import func
-from sqlalchemy.orm import selectinload
 
 async def get_regions_with_customer_count(db: AsyncSession):
     regions = await db.execute(select(Region))
@@ -407,8 +403,7 @@ async def get_customers_in_region(db: AsyncSession, region_id: str):
     
     # Count items in active carts (only pending)
     cart_stmt = select(Cart.user_id, func.count(CartItem.id)).join(CartItem).where(
-        Cart.user_id.in_(user_ids),
-        CartItem.status == 'pending'
+        Cart.user_id.in_(user_ids)
     ).group_by(Cart.user_id)
     cart_counts = await db.execute(cart_stmt)
     cart_map = {row[0]: row[1] for row in cart_counts.all()}
@@ -443,7 +438,7 @@ async def get_customer_orders(db: AsyncSession, user_id: int):
     
     result = []
     if cart and cart.items:
-        pending_items = [item for item in cart.items if item.status == 'pending']
+        pending_items = [item for item in cart.items]
 
         def _build_virtual_order(items, status_label, virtual_id):
             total_price = Decimal("0.0")
@@ -651,7 +646,7 @@ async def get_season_archive(db: AsyncSession, archive_id: int):
 
 async def get_season_stats(db: AsyncSession):
     from sqlalchemy import select, func
-    from app.domains.orders.models import Order, OrderItem, CartItem
+    from app.domains.orders.models import Order, OrderItem
     from app.domains.products.models import ColorSKU, ProductModel, ProductType
 
     # 1. Orders Overview
@@ -723,10 +718,10 @@ async def get_season_stats(db: AsyncSession):
 async def reset_season(db: AsyncSession, season_name: str):
     import os
     import shutil
-    from sqlalchemy import select, delete, update
+    from sqlalchemy import delete, update
     from app.domains.admin.models import SeasonArchive
     from app.domains.orders.models import CartItem, Order
-    from app.domains.products.models import ProductType, ColorSKU
+    from app.domains.products.models import ProductType
     import app.domains.admin.services as admin_services
 
     from fastapi.encoders import jsonable_encoder
@@ -755,7 +750,7 @@ async def reset_season(db: AsyncSession, season_name: str):
                     os.unlink(file_path)
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
-            except Exception as e:
+            except Exception:
                 pass # Ignore errors, we want to clear as much as possible
 
     # 4. Delete all ProductType (cascades to ProductModel and ColorSKU)
@@ -798,7 +793,6 @@ async def archive_season_orders(db: AsyncSession, season_name: str):
     
     await db.commit()
     return True
-from sqlalchemy import func
 
 async def _get_max_order(db: AsyncSession, model_class, **filters):
     stmt = select(func.max(model_class.display_order))

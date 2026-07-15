@@ -136,3 +136,11 @@ class AuditLogOut(BaseModel):
 
 class ReorderRequest(BaseModel):
     direction: str # "up" or "down"
+
+class BackupFolderOut(BaseModel):
+    name: str
+    db_size_bytes: int
+    images_size_bytes: int
+    created_at: str
+    is_valid: bool
+

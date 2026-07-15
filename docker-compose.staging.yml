@@ -27,6 +27,7 @@ services:
     ports:
       - "8001:8000"
     environment:
+      - TZ=Asia/Jerusalem
       - FRONTEND_URL=http://35.231.4.62
       - DB_HOST=db
       - DB_PORT=3306
@@ -43,8 +44,11 @@ services:
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
+      - WISTIA_API_TOKEN=${WISTIA_API_TOKEN}
     volumes:
       - backend_uploads_staging:/app/uploads
+      - ./credentials.json:/app/credentials.json
+      - ./token.json:/app/token.json
     depends_on:
       - db
       - redis
@@ -54,6 +58,7 @@ services:
     container_name: fabric_staging_backup
     restart: always
     environment:
+      - TZ=Asia/Jerusalem
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=${DB_USER:-fabric_user}
