@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.config import settings
@@ -15,6 +15,9 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.core.http_client import http_client
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
+from app.db.database import get_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -68,7 +71,14 @@ def create_app() -> FastAPI:
     app.include_router(share_router, prefix=f"{settings.API_V1_STR}/share", tags=["share"])
 
     @app.get(f"{settings.API_V1_STR}/health", tags=["health"])
-    async def health_check():
-        return {"status": "ok"}
+    async def health_check(db: AsyncSession = Depends(get_db)):
+        try:
+            # Deep health check: verify DB connectivity
+            await db.execute(text("SELECT 1"))
+            return {"status": "ok", "db": "ok"}
+        except Exception as e:
+            import logging
+            logging.error(f"Health check failed: {e}")
+            raise HTTPException(status_code=503, detail="Service Unavailable")
 
     return app

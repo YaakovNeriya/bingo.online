@@ -134,5 +134,37 @@ jobs:
             # Pull the latest images built by this action
             sudo docker compose -f docker-compose.staging.yml pull
             
-            # Restart the services
+            # Option 2: Smart Conditional Backup
+            echo "Checking if database migration is required..."
+            # Check if running alembic upgrade head generates any SQL
+            if sudo docker compose -f docker-compose.staging.yml run --rm backend alembic upgrade head --sql | grep -q "UPDATE alembic_version"; then
+              echo "Pending database changes detected. Running Google Drive backup before migration..."
+              sudo docker compose -f docker-compose.staging.yml exec -T backend python backup_to_drive.py || echo "Warning: Backup failed!"
+            else
+              echo "No pending database changes. Skipping backup."
+            fi
+            
+            # Option 1: Safe Migration (Controlled Downtime)
+            # Stop the backend to prevent race conditions during migration
+            sudo docker compose -f docker-compose.staging.yml stop backend
+            
+            # Run Alembic migrations on a temporary container
+            echo "Running Alembic migrations..."
+            if ! sudo docker compose -f docker-compose.staging.yml run --rm backend alembic upgrade head; then
+              echo "❌ Migration failed! Halting pipeline to prevent deployment of broken state."
+              exit 1
+            fi
+            
+            # Restart all services with the new code
             sudo docker compose -f docker-compose.staging.yml up -d
+            
+            # Wait a few seconds for FastAPI to start
+            sleep 5
+            
+            # Option 5: Health Check (Halt pipeline on failure)
+            echo "Running health check on http://localhost:8001/api/v1/health..."
+            if ! curl -s -f http://localhost:8001/api/v1/health > /dev/null; then
+              echo "ERROR: Health check failed! The backend API is down. Check logs!"
+              exit 1
+            fi
+            echo "Health check passed! Deployment successful."

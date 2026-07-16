@@ -35,6 +35,12 @@ class WistiaPreloadManager {
       return;
     }
 
+    // Check if the player already exists anywhere in the DOM (e.g. Lightbox opened quickly)
+    // This prevents the severe Wistia bug of double-audio and phantom players
+    if (typeof document !== 'undefined' && document.querySelector(`wistia-player[media-id="${mediaId}"]`)) {
+      return;
+    }
+
     if (this.activePreloads.size >= CONFIG.MAX_CONCURRENT_PRELOADS) {
       if (!this.queue.includes(mediaId)) {
         this.queue.push(mediaId);

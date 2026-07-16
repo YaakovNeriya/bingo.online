@@ -1,15 +1,6 @@
 name: Build Production
 
 on:
-  # push:
-  #   branches: [ "main" ]
-  #   paths-ignore:
-  #     - '**/*.md'
-  #     - '.gitignore'
-  #     - '.github/workflows/test.yml'
-  #     - 'backend/tests/**'
-  #     - 'backend/pytest.ini'
-  #     - 'backend/requirements-dev.txt'
   workflow_dispatch:
 
 jobs:
@@ -128,11 +119,75 @@ jobs:
             ${{ secrets.DRIVE_TOKEN_JSON }}
             EOF
 
-            # Login to Docker Hub in case the repository is private
+            # Login to Docker Hub
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # Pull the latest images built by this action
+            # Step A: Backup current working images by tagging them as "previous"
+            echo "Tagging current working images as 'previous' for potential rollback..."
+            OLD_BACKEND=$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:latest)
+            OLD_FRONTEND=$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:latest)
+            if [ ! -z "$OLD_BACKEND" ]; then
+              sudo docker tag $OLD_BACKEND ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:previous
+            fi
+            if [ ! -z "$OLD_FRONTEND" ]; then
+              sudo docker tag $OLD_FRONTEND ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:previous
+            fi
+
+            # Step B: Pull the new images
             sudo docker compose -f docker-compose.prod.yml pull
             
-            # Restart the services
+            # Step B.5: Smart Conditional Backup
+            echo "Checking if database migration is required..."
+            if sudo docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head --sql | grep -q "UPDATE alembic_version"; then
+              echo "Pending database changes detected. Running Google Drive backup before migration..."
+              sudo docker compose -f docker-compose.prod.yml exec -T backend python backup_to_drive.py || echo "Warning: Backup failed!"
+            else
+              echo "No pending database changes. Skipping backup."
+            fi
+            
+            # Step C: Safe Migration (Controlled Downtime)
+            sudo docker compose -f docker-compose.prod.yml stop backend
+            
+            echo "Running Alembic migrations..."
+            if ! sudo docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head; then
+                echo "❌ Migration failed! Initiating Automatic Rollback..."
+                # Since migration failed, DB is unchanged. Just restore old images.
+                if [ ! -z "$OLD_BACKEND" ]; then
+                  sudo docker tag ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:previous ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:latest
+                  sudo docker tag ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:previous ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:latest
+                fi
+                sudo docker compose -f docker-compose.prod.yml up -d
+                echo "Rollback complete. Server restored to previous state."
+                exit 1
+            fi
+            
+            # Step D: Start new code
             sudo docker compose -f docker-compose.prod.yml up -d
+            
+            # Wait a few seconds for FastAPI to start
+            sleep 5
+            
+            # Step E: Health Check & Automatic Rollback
+            echo "Running health check on http://localhost:8001/api/v1/health..."
+            if ! curl -s -f http://localhost:8001/api/v1/health > /dev/null; then
+              echo "❌ Health check failed! Initiating Automatic Rollback..."
+              
+              # 1. Stop broken code
+              sudo docker compose -f docker-compose.prod.yml stop backend
+              
+              # 2. Downgrade Database (since migration succeeded but code is broken)
+              sudo docker compose -f docker-compose.prod.yml run --rm backend alembic downgrade -1
+              
+              # 3. Restore old images
+              if [ ! -z "$OLD_BACKEND" ]; then
+                sudo docker tag ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:previous ${{ secrets.DOCKERHUB_USERNAME }}/bingo-backend:latest
+                sudo docker tag ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:previous ${{ secrets.DOCKERHUB_USERNAME }}/bingo-frontend:latest
+              fi
+              
+              # 4. Restart server with old working code
+              sudo docker compose -f docker-compose.prod.yml up -d
+              echo "Rollback complete. Server restored to previous state."
+              exit 1
+            fi
+            
+            echo "✅ Health check passed! Deployment successful."

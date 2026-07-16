@@ -80,30 +80,57 @@ const SmartImage = ({ src, alt, style, className, hidePlayIcon = false, eager = 
   }, [wistiaId, lightboxMode]);
 
   useEffect(() => {
+    let isCancelled = false;
+    let activePlayer = null;
+
     if (lightboxMode && wistiaId && containerRef.current) {
       import('../../utils/WistiaSmartPreloader').then((module) => {
-        let playerNode = module.WistiaSmartPreloader.getPlayerFor(wistiaId);
-        if (!playerNode) {
-          playerNode = document.createElement('wistia-player');
-          playerNode.setAttribute('media-id', wistiaId);
-          playerNode.setAttribute('preload', 'auto');
-        }
-        playerNode.setAttribute('autoplay', 'true');
-        // Since we are moving it to the lightbox, re-enable play buttons/controls
-        playerNode.removeAttribute('big-play-button');
-        playerNode.muted = false;
-        playerNode.removeAttribute('muted');
+        if (isCancelled) return;
         
-        playerNode.style.width = '100%';
-        playerNode.style.height = '100%';
-        playerNode.style.maxWidth = '100%';
-        playerNode.style.maxHeight = '100%';
+        activePlayer = module.WistiaSmartPreloader.getPlayerFor(wistiaId);
+        if (!activePlayer) {
+          activePlayer = document.createElement('wistia-player');
+          activePlayer.setAttribute('media-id', wistiaId);
+          activePlayer.setAttribute('preload', 'auto');
+        }
+        activePlayer.setAttribute('autoplay', 'true');
+        // Since we are moving it to the lightbox, re-enable play buttons/controls
+        activePlayer.removeAttribute('big-play-button');
+        activePlayer.muted = false;
+        activePlayer.removeAttribute('muted');
+        
+        activePlayer.style.width = '100%';
+        activePlayer.style.height = '100%';
+        activePlayer.style.maxWidth = '100%';
+        activePlayer.style.maxHeight = '100%';
         
         containerRef.current.innerHTML = '';
-        containerRef.current.appendChild(playerNode);
+        containerRef.current.appendChild(activePlayer);
       });
       
       return () => {
+        isCancelled = true;
+        
+        if (activePlayer) {
+          // Proper Wistia API cleanup: ask Wistia to pause and destroy its internal iframe
+          if (window._wq) {
+             window._wq.push({
+               id: wistiaId,
+               onReady: function(video) {
+                 try {
+                   video.pause();
+                   video.remove();
+                 } catch (e) {}
+               }
+             });
+          }
+          
+          activePlayer.removeAttribute('autoplay');
+          if (activePlayer.parentNode) {
+            activePlayer.parentNode.removeChild(activePlayer);
+          }
+        }
+
         if (containerRef.current) {
            containerRef.current.innerHTML = '';
         }
