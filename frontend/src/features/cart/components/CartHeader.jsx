@@ -14,10 +14,10 @@ export const CartHeader = ({
         <button 
           className={`btn send-order-btn ${hasActiveOrder ? 'sent' : ''}`}
           onClick={handleToggleSendOrder}
-          disabled={isSendingOrder || (cartIsEmpty && !hasActiveOrder)}
+          disabled={isSendingOrder || (cartIsEmpty && !hasActiveOrder) || isDeadlinePassed}
           style={{ 
-            opacity: (isSendingOrder || (cartIsEmpty && !hasActiveOrder)) ? 0.6 : 1,
-            cursor: (isSendingOrder || (cartIsEmpty && !hasActiveOrder)) ? 'not-allowed' : 'pointer',
+            opacity: (isSendingOrder || (cartIsEmpty && !hasActiveOrder) || isDeadlinePassed) ? 0.6 : 1,
+            cursor: (isSendingOrder || (cartIsEmpty && !hasActiveOrder) || isDeadlinePassed) ? 'not-allowed' : 'pointer',
             backgroundColor: hasActiveOrder ? '#f59e0b' : '',
             width: '100%',
             maxWidth: '600px',

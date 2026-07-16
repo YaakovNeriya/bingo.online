@@ -24,7 +24,10 @@ const CartView = () => {
     editLength,
     setEditLength,
     editUnits,
-    setEditUnits
+    setEditUnits,
+    displayItems,
+    cartTotalPrice,
+    setItemSelection
   } = useCartState();
 
   const {
@@ -45,7 +48,8 @@ const CartView = () => {
     minCutLength,
     setEditingItem,
     setError,
-    toggleItemSelection
+    toggleItemSelection,
+    setItemSelection
   });
 
   const isDeadlinePassed = user?.applicable_deadline && new Date() > new Date(user.applicable_deadline);
@@ -59,14 +63,6 @@ const CartView = () => {
   if (!cart) return <div className="container">{error || 'טוען...'}</div>;
 
   const hasActiveOrder = !!activeOrder;
-  
-  const displayItems = [];
-  if (hasActiveOrder) {
-    displayItems.push(...activeOrder.items.map(i => ({ ...i, is_order_item: true, unique_id: `order_${i.id}` })));
-  }
-  if (cart?.items) {
-    displayItems.push(...cart.items.map(i => ({ ...i, is_order_item: false, unique_id: `cart_${i.id}` })));
-  }
 
   return (
     <div className="container" style={{ maxWidth: '800px' }}>
@@ -123,22 +119,7 @@ const CartView = () => {
               <div style={{ flexShrink: 0 }}>
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-light)' }}>סה"כ לתשלום</span>
                 <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--primary-color)', lineHeight: '1', marginTop: '0.1rem' }}>
-                  ₪{(displayItems
-                      .filter(item => selectedItems[item.unique_id])
-                      .reduce((sumCents, item) => {
-                        const price = item.price_at_purchase 
-                          ? parseFloat(item.price_at_purchase) 
-                          : parseFloat(item.color_sku.specific_price ?? item.color_sku.product_model.base_price);
-                        
-                        // Use integer math: length (cm) * units * price (agorot)
-                        const lengthCm = Math.round(parseFloat(item.length_meters) * 100);
-                        const priceAgorot = Math.round(price * 100);
-                        
-                        // cm * units * agorot = (length * price) * 10000
-                        // To get agorot, divide by 100
-                        const itemTotalAgorot = Math.round((lengthCm * item.units * priceAgorot) / 100);
-                        return sumCents + itemTotalAgorot;
-                      }, 0) / 100).toFixed(2)}
+                  ₪{cartTotalPrice}
                 </div>
               </div>
               <button 

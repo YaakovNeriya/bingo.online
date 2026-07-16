@@ -13,7 +13,8 @@ export const useCartActions = ({
   minCutLength,
   setEditingItem,
   setError,
-  toggleItemSelection
+  toggleItemSelection,
+  setItemSelection
 }) => {
   const { fetchCartCount } = useContext(CartContext);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -125,7 +126,10 @@ export const useCartActions = ({
     if (activeOrder) {
       try {
         if (item.is_order_item) {
-          await client.post(`/orders/active/items/${item.id}/remove`);
+          const res = await client.post(`/orders/active/items/${item.id}/remove`);
+          if (res.data?.new_cart_item_id) {
+            setItemSelection(`cart_${res.data.new_cart_item_id}`, false);
+          }
         } else {
           await client.post(`/orders/active/items/${item.id}/add`);
         }

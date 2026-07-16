@@ -384,9 +384,11 @@ async def move_order_item_to_cart(db: AsyncSession, user: User, order_item_id: i
         )
         db.add(new_cart_item)
         await db.delete(order_item)
+        await db.flush()
+        new_cart_item_id = new_cart_item.id
         
     await delete_cache(CACHE_KEY_CATALOG)
-    return {"status": "success"}
+    return {"status": "success", "new_cart_item_id": new_cart_item_id}
 
 async def delete_active_order_item(db: AsyncSession, user: User, order_item_id: int) -> dict:
     await _check_deadline_passed(db, user.id)

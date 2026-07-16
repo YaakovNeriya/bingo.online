@@ -18,6 +18,10 @@ export const CartItemCard = ({
   const lengthCm = Math.round(parseFloat(item.length_meters) * 100);
   const priceAgorot = Math.round(parseFloat(pricePerMeter) * 100);
   const rowTotal = (Math.round((lengthCm * item.units * priceAgorot) / 100) / 100).toFixed(2);
+  
+  const lastImage = item.color_sku.image_urls && item.color_sku.image_urls.length > 0 
+    ? item.color_sku.image_urls[item.color_sku.image_urls.length - 1] 
+    : null;
 
   return (
     <div className="cart-item-premium" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
@@ -58,8 +62,8 @@ export const CartItemCard = ({
         {/* Image */}
         <div style={{ flex: '0 0 auto' }}>
           <Link to={`/product/${item.color_sku.product_model.id}`} style={{ width: '88px', height: '88px', borderRadius: '10px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer', textDecoration: 'none' }}>
-            {item.color_sku.image_url ? (
-              <SmartImage src={item.color_sku.image_url} alt={item.color_sku.color_name} style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+            {lastImage ? (
+              <SmartImage src={lastImage} alt={item.color_sku.color_name} style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
             ) : (
               <span style={{ fontSize: '2.5rem' }}>🧵</span>
             )}
@@ -71,7 +75,7 @@ export const CartItemCard = ({
       <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.5rem 0' }} />
 
       {/* Bottom Section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
         {/* Actions */}
         <div className="cart-item-actions">
           <button 
@@ -110,7 +114,7 @@ export const CartItemCard = ({
         {/* Quantity & Price */}
         <div className="cart-item-price-section">
           <div style={{ fontWeight: '800', fontSize: '1.4rem', color: 'var(--text-color)', lineHeight: 1, marginBottom: '0.5rem' }}>₪{rowTotal}</div>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.3rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <span style={{ background: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: '500' }}>
               {item.length_meters} מטר
             </span>
