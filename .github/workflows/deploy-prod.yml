@@ -191,3 +191,7 @@ jobs:
             fi
             
             echo "✅ Health check passed! Deployment successful."
+            
+            # Clean up old unused images to save disk space
+            echo "Cleaning up old Docker images..."
+            sudo docker image prune -f || true
