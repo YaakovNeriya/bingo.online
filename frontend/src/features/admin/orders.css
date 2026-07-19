@@ -1,0 +1,162 @@
+/* orders.css - Clean styling for Orders Management */
+
+.admin-order-row {
+  background: var(--glass-bg);
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  transition: all 0.2s;
+}
+
+.admin-order-main {
+  padding: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.admin-order-main.expanded {
+  background: #f8fafc;
+}
+
+.admin-order-main:not(.expanded) {
+  background: white;
+}
+
+.admin-order-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1 1 300px;
+}
+
+.admin-order-id-badge {
+  background: #1e293b;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  display: inline-block;
+}
+
+.admin-order-date {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-light);
+  font-size: 0.85rem;
+}
+
+.admin-order-divider {
+  width: 1px;
+  height: 40px;
+  background: #e2e8f0;
+  display: block;
+}
+
+.admin-order-user {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-order-user-name {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-color);
+  font-size: 1.05rem;
+}
+
+.admin-order-user-phone {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.admin-order-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-order-total {
+  text-align: left;
+}
+
+.admin-order-total-label {
+  color: var(--text-light);
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+}
+
+.admin-order-total-price {
+  font-size: 1.25rem;
+  color: var(--success-color);
+}
+
+.admin-order-action-btn {
+  background: #eab308;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+
+.admin-order-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.admin-order-status-select {
+  appearance: none;
+  border: 1px solid transparent;
+  padding: 0.4rem 2.2rem 0.4rem 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.admin-order-expand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  transition: background 0.2s;
+}
+
+.admin-order-expand-icon:hover {
+  background: #e2e8f0;
+}
+
+.admin-order-select-container {
+  position: relative;
+}
+
+.admin-order-select-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}

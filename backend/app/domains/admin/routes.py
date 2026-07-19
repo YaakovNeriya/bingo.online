@@ -1,4 +1,7 @@
 from fastapi import APIRouter, Depends, Request
+import logging
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Any, List
@@ -305,7 +308,8 @@ async def upload_image(
     try:
         new_filename = await asyncio.to_thread(process_image_sync, image_data, aspect_ratio, upload_dir)
         return {"image_url": f"/uploads/{new_filename}"}
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Image processing failed: {e}. Falling back to saving the raw file directly.")
         # Fallback to direct save if Pillow fails for any reason
         ext = file.filename.split(".")[-1] if "." in file.filename else "bin"
         new_filename = f"{uuid.uuid4().hex}.{ext}"
@@ -526,7 +530,7 @@ def run_manual_backup():
     try:
         subprocess.run([sys.executable, "backup_to_drive.py"], check=True)
     except Exception as e:
-        print(f"Manual backup failed: {e}")
+        logger.error(f"Manual backup failed: {e}")
 
 @router.get("/backups", response_model=List[schemas.BackupFolderOut])
 async def get_backups(

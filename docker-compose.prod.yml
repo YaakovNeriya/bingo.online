@@ -66,6 +66,9 @@ services:
       - CORS_ORIGINS=https://bingo.online,https://www.bingo.online
     volumes:
       - backend_uploads:/app/uploads
+      - ./credentials.json:/app/credentials.json
+      - ./token.json:/app/token.json
+      - ./backups:/app/backups
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')\""]
       interval: 5m

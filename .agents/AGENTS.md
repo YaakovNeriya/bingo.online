@@ -75,6 +75,7 @@ All new features MUST be organized under `src/features/<feature_name>/`:
 10. **JWT Expiry Handling:** Token expiry must be handled automatically in the Axios interceptor (e.g., transparent refresh or seamless redirect to login preserving the `returnUrl`).
 11. **Loading & Error States:** Every API call must visually handle 3 states: Loading, Success, Failure. Crashing the UI or showing blank screens during network requests is unacceptable.
 12. **Secure Token Storage:** Avoid storing highly sensitive tokens (Admin JWT) in `localStorage` where they are vulnerable to XSS. Prefer `httpOnly` cookies where possible.
+13. **Performance (No Inline Styles in Loops):** Never use inline `style={{...}}` properties inside `.map()` loops or highly repeated components. Extract styles to external CSS classes. For conditional styling, toggle dynamic classes (e.g., `className={inStock ? "in-stock" : "out-of-stock"}`) rather than injecting design objects directly into the code, to prevent Virtual DOM memory bloat.
 
 ### DevOps & Workflow
 13. **Environment Segregation:** Development, Staging, and Production MUST use completely separated databases and API keys.

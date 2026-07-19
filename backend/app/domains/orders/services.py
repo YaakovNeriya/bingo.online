@@ -1,4 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+import logging
+
+logger = logging.getLogger(__name__)
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload, joinedload
 from decimal import Decimal
@@ -44,8 +47,8 @@ async def _get_min_cut_length(db: AsyncSession) -> Decimal:
     if setting and setting.value:
         try:
             return Decimal(setting.value)
-        except:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to parse minimum_order_length value '{setting.value}' as Decimal: {e}. Falling back to 1.0.")
     return Decimal('1.0')
 
 async def add_item_to_cart(db: AsyncSession, user_id: int, item_in: schemas.CartItemAdd) -> Cart:

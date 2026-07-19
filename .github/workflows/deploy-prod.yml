@@ -140,7 +140,10 @@ jobs:
             echo "Checking if database migration is required..."
             if sudo docker compose -f docker-compose.prod.yml run --rm backend alembic upgrade head --sql | grep -q "UPDATE alembic_version"; then
               echo "Pending database changes detected. Running Google Drive backup before migration..."
-              sudo docker compose -f docker-compose.prod.yml exec -T backend python backup_to_drive.py || echo "Warning: Backup failed!"
+              if ! sudo docker compose -f docker-compose.prod.yml exec -T backend python backup_to_drive.py; then
+                echo "Container is down (exec failed). Falling back to temporary container (run --rm)..."
+                sudo docker compose -f docker-compose.prod.yml run --rm backend python backup_to_drive.py || echo "Warning: Backup failed!"
+              fi
             else
               echo "No pending database changes. Skipping backup."
             fi

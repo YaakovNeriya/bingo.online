@@ -140,7 +140,7 @@ const WistiaMediaModal = ({ isOpen, onClose, onSelect }) => {
             justifyContent: 'center',
             cursor: 'pointer',
             color: 'var(--text-light)',
-            transition: 'all 0.2s'
+            transition: 'opacity 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s'
           }} className="btn-hover-danger">
             <X size={25} />
           </button>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import client from '../../../api/client';
 import { Search, ChevronDown, ChevronUp, Package, Calendar, Phone, User, ExternalLink, Printer, ShoppingCart } from 'lucide-react';
 import { formatDate, getStatusStyle, getStatusLabel, ORDER_STATUSES } from '../utils/adminUtils';
+import '../orders.css';
 
 const OrdersManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -173,52 +174,32 @@ const OrdersManagement = () => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filteredOrders.map(order => (
-            <div key={order.id} style={{
-              background: 'var(--glass-bg)',
-              border: '1px solid #cbd5e1',
-              borderRadius: '10px',
-              overflow: 'hidden',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
-              transition: 'all 0.2s'
-            }}>
+            <div key={order.id} className="admin-order-row">
               
               {/* Main Row */}
               <div 
                 onClick={() => toggleOrder(order.id)}
-                className="admin-order-main"
-                style={{
-                  padding: '1.25rem',
-                  cursor: 'pointer',
-                  background: expandedOrder === order.id ? '#f8fafc' : 'white',
-                }}
+                className={`admin-order-main ${expandedOrder === order.id ? 'expanded' : ''}`}
               >
                 {/* Left Side: Basic Info */}
                 <div className="admin-order-left">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                    <span style={{ 
-                      background: '#1e293b', 
-                      color: 'white', 
-                      padding: '4px 10px', 
-                      borderRadius: '6px', 
-                      fontWeight: 'bold', 
-                      fontSize: '1rem',
-                      display: 'inline-block'
-                    }}>
+                    <span className="admin-order-id-badge">
                       הזמנה #{order.id}
                     </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-light)', fontSize: '0.85rem' }}>
+                    <span className="admin-order-date">
                       <Calendar size={14} />
                       {formatDate(order.created_at)}
                     </span>
                   </div>
-                  <div className="mobile-hidden" style={{ width: '1px', height: '40px', background: '#e2e8f0', display: 'block' }}></div>
+                  <div className="mobile-hidden admin-order-divider"></div>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                    <strong style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-color)', fontSize: '1.05rem' }}>
+                  <div className="admin-order-user">
+                    <strong className="admin-order-user-name">
                       <User size={16} color="#475569" />
                       {order.user ? `${order.user.first_name} ${order.user.last_name || ''}` : 'לקוח לא ידוע'}
                     </strong>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-light)', fontSize: '0.9rem' }}>
+                    <span className="admin-order-user-phone">
                       <Phone size={14} />
                       {order.user?.phone || 'ללא נייד'}
                       {order.user?.region && (
@@ -232,11 +213,11 @@ const OrdersManagement = () => {
                 </div>
 
                 {/* Right Side: Status & Actions */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <div className="admin-order-right">
                   
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', marginBottom: '2px' }}>סה"כ:</div>
-                    <strong style={{ fontSize: '1.25rem', color: 'var(--success-color)' }}>
+                  <div className="admin-order-total">
+                    <div className="admin-order-total-label">סה"כ:</div>
+                    <strong className="admin-order-total-price">
                       {Number(order.total_price || 0).toFixed(2)}₪
                     </strong>
                   </div>
@@ -248,59 +229,32 @@ const OrdersManagement = () => {
                         handleImpersonate(order.user);
                       }}
                       title="היכנס לעריכת עגלת לקוח"
-                      style={{
-                        background: '#eab308',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                      }}
+                      className="admin-order-action-btn"
                     >
                       <ShoppingCart size={18} />
                     </button>
                   )}
 
                   {/* Status update select */}
-                  <div onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
+                  <div onClick={(e) => e.stopPropagation()} className="admin-order-select-container">
                     <select
                       value={order.status}
                       onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                      className="admin-order-status-select"
                       style={{
-                        appearance: 'none',
                         background: getStatusStyle(order.status).background,
-                        color: getStatusStyle(order.status).color,
-                        border: '1px solid transparent',
-                        padding: '0.4rem 2.2rem 0.4rem 1rem',
-                        borderRadius: '8px',
-                        fontWeight: 'bold',
-                        fontSize: '0.9rem',
-                        cursor: 'pointer',
-                        outline: 'none'
+                        color: getStatusStyle(order.status).color
                       }}
                     >
                       {Object.entries(ORDER_STATUSES).map(([key, val]) => (
                         <option key={key} value={key}>{val.label}</option>
                       ))}
                     </select>
-                    <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: getStatusStyle(order.status).color }} />
+                    <ChevronDown size={14} className="admin-order-select-icon" style={{ color: getStatusStyle(order.status).color }} />
                   </div>
 
                   {/* Expand icon */}
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    background: '#f1f5f9',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--text-light)'
-                  }}>
+                  <div className="admin-order-expand-icon">
                     {expandedOrder === order.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </div>
 

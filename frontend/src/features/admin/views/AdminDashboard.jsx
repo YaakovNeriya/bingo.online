@@ -11,13 +11,18 @@ import SeasonStatistics from '../components/SeasonStatistics';
 import OrdersManagement from './OrdersManagement';
 import InventoryManagement from './InventoryManagement';
 import BackupsManagement from './BackupsManagement';
+import '../admin.css';
 
 const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const initialTab = searchParams.get('tab') || 'orders';
+  const initialTab = searchParams.get('tab') || localStorage.getItem('admin_dashboard_tab') || 'orders';
   const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    localStorage.setItem('admin_dashboard_tab', activeTab);
+  }, [activeTab]);
   
   const navigate = useNavigate();
   const [persistedEditSkuId, setPersistedEditSkuId] = useState(null);
@@ -56,65 +61,65 @@ const AdminDashboard = () => {
     <div className="container">
       <h1>פאנל ניהול</h1>
       
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem' }}>
+      <div className="admin-tabs-container">
         <button
-          className={`btn ${activeTab === 'statistics' ? 'btn-primary' : ''}`}
+          className={`btn admin-tab-btn ${activeTab === 'statistics' ? 'btn-primary' : 'admin-tab-btn-inactive'}`}
           onClick={() => setActiveTab('statistics')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'statistics' ? '#e8e8e8ff' : '', color: activeTab !== 'statistics' ? '#475569' : '' }}>
+        >
           סטטיסטיקה
         </button>
         <button 
-          className={`btn ${activeTab === 'orders' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'orders' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('orders')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'orders' ? '#e8e8e8ff' : '', color: activeTab !== 'orders' ? '#475569' : '' }}>
+        >
           הזמנות
         </button>
         <button 
-          className={`btn ${activeTab === 'products' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'products' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('products')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'products' ? '#e8e8e8ff' : '', color: activeTab !== 'products' ? '#475569' : '' }}>
+        >
           מוצרים
         </button>
         <button 
-          className={`btn ${activeTab === 'inventory' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'inventory' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('inventory')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'inventory' ? '#e8e8e8ff' : '', color: activeTab !== 'inventory' ? '#475569' : '' }}>
+        >
           מלאי
         </button>
         <button 
-          className={`btn ${activeTab === 'season' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'season' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('season')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'season' ? '#e8e8e8ff' : '', color: activeTab !== 'season' ? '#475569' : '' }}>
+        >
           הכנה לעונה
         </button>
         <button 
-          className={`btn ${activeTab === 'settings' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'settings' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('settings')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'settings' ? '#e8e8e8ff' : '', color: activeTab !== 'settings' ? '#475569' : '' }}>
+        >
           הגדרות חנות
         </button>
         <button 
-          className={`btn ${activeTab === 'customers' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'customers' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('customers')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'customers' ? '#e8e8e8ff' : '', color: activeTab !== 'customers' ? '#475569' : '' }}>
+        >
           לקוחות
         </button>
         <button 
-          className={`btn ${activeTab === 'regions' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'regions' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('regions')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'regions' ? '#e8e8e8ff' : '', color: activeTab !== 'regions' ? '#475569' : '' }}>
-          אזורי משלוח
+        >
+          אזורי חלוקה
         </button>
         <button 
-          className={`btn ${activeTab === 'archives' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'archives' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('archives')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'archives' ? '#e8e8e8ff' : '', color: activeTab !== 'archives' ? '#475569' : '' }}>
-          ארכיון
+        >
+          ארכיון עונות
         </button>
         <button 
-          className={`btn ${activeTab === 'backups' ? 'btn-primary' : ''}`} 
+          className={`btn admin-tab-btn ${activeTab === 'backups' ? 'btn-primary' : 'admin-tab-btn-inactive'}`} 
           onClick={() => setActiveTab('backups')}
-          style={{ flex: '1 1 auto', padding: '0.5rem', fontSize: '0.9rem', background: activeTab !== 'backups' ? '#e8e8e8ff' : '', color: activeTab !== 'backups' ? '#475569' : '' }}>
+        >
           גיבויים
         </button>
       </div>

@@ -1,0 +1,116 @@
+/* admin.css - Clean CSS classes for AdminDashboard and admin views */
+
+.admin-tabs-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.admin-tab-btn {
+  flex: 1 1 auto;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn-inactive {
+  background: #e8e8e8ff;
+  color: #475569;
+}
+
+.admin-tab-btn-inactive:hover {
+  background: #cbd5e1;
+}
+
+/* Product Management Extracted Classes */
+.admin-type-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  background: rgba(59,130,246,0.25);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(59,130,246,0.4);
+}
+
+.admin-model-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(156, 163, 175, 0.25);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(156, 163, 175, 0.4);
+}
+
+.admin-sku-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--glass-bg);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  flex: 1 1 100%;
+}
+
+.admin-reorder-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+}
+
+.admin-actions-col {
+  display: flex;
+  gap: 1rem;
+  margin-right: auto;
+}
+
+.admin-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.admin-icon-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.admin-sku-badge-filled {
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.1;
+  display: inline-block;
+}
+
+.admin-sku-badge-empty {
+  background: #e2e8f0;
+  color: var(--text-light);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.1;
+  display: inline-block;
+}
+
+.admin-sku-info {
+  font-size: 0.95rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}

@@ -115,13 +115,13 @@ export const CartItemCard = ({
         <div className="cart-item-price-section">
           <div style={{ fontWeight: '800', fontSize: '1.4rem', color: 'var(--text-color)', lineHeight: 1, marginBottom: '0.5rem' }}>₪{rowTotal}</div>
           <div style={{ display: 'flex', gap: '0.3rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <span style={{ background: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: '500' }}>
+            <span style={{ background: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: '500', whiteSpace: 'nowrap' }}>
               {item.length_meters} מטר
             </span>
-            <span style={{ background: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: '500' }}>
+            <span style={{ background: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: '500', whiteSpace: 'nowrap' }}>
               {item.units} יח'
             </span>
-            <span style={{ background: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: '500' }}>
+            <span style={{ background: '#f1f5f9', padding: '0.25rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: '500', whiteSpace: 'nowrap' }}>
               ₪{parseFloat(pricePerMeter).toFixed(2)} למטר
             </span>
           </div>

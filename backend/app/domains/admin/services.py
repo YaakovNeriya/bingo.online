@@ -1,7 +1,10 @@
 import os
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from decimal import Decimal
+
+logger = logging.getLogger(__name__)
 
 from app.domains.products.models import ProductType, ProductModel, ColorSKU
 from app.domains.admin import schemas
@@ -72,8 +75,8 @@ async def delete_product_type(db: AsyncSession, type_id: int):
                     if os.path.exists(file_path):
                         try:
                             os.remove(file_path)
-                        except OSError:
-                            pass
+                        except OSError as e:
+                            logger.warning(f"Failed to delete category image {file_path}: {e}")
         await db.delete(db_obj)
         await db.commit()
         await _invalidate_catalog()
@@ -104,8 +107,8 @@ async def delete_product_model(db: AsyncSession, model_id: int):
                 if os.path.exists(file_path):
                     try:
                         os.remove(file_path)
-                    except OSError:
-                        pass
+                    except OSError as e:
+                        logger.warning(f"Failed to delete product model image {file_path}: {e}")
         await db.delete(db_obj)
         await db.commit()
         await _invalidate_catalog()
@@ -136,8 +139,8 @@ async def update_color_sku(db: AsyncSession, sku_id: int, obj_in: schemas.ColorS
             if os.path.exists(file_path):
                 try:
                     os.remove(file_path)
-                except OSError:
-                    pass
+                except OSError as e:
+                    logger.warning(f"Failed to delete orphaned SKU image {file_path}: {e}")
 
     for k, v in update_data.items():
         setattr(db_obj, k, v)
@@ -172,8 +175,8 @@ async def delete_color_sku(db: AsyncSession, sku_id: int):
             if os.path.exists(file_path):
                 try:
                     os.remove(file_path)
-                except OSError:
-                    pass
+                except OSError as e:
+                    logger.warning(f"Failed to delete SKU image {file_path}: {e}")
         await db.delete(db_obj)
         await db.commit()
         await _invalidate_catalog()
@@ -312,8 +315,8 @@ async def update_site_setting(db: AsyncSession, key: str, update_in: schemas.Sit
             if os.path.exists(file_path):
                 try:
                     os.remove(file_path)
-                except OSError:
-                    pass
+                except OSError as e:
+                    logger.warning(f"Failed to delete old site setting asset {file_path}: {e}")
         setting.value = update_in.value
     await db.commit()
     await db.refresh(setting)

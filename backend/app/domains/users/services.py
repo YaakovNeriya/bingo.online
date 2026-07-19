@@ -1,4 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+import logging
+
+logger = logging.getLogger(__name__)
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.domains.users.models import User
@@ -86,8 +89,8 @@ async def get_user_deadline(db: AsyncSession, user_id: int) -> Optional[datetime
     if setting and setting.value:
         try:
             return dateutil.parser.isoparse(setting.value)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to parse global_deadline value '{setting.value}': {e}. Treating as no deadline.")
             
     return None
 

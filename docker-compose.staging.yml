@@ -49,6 +49,7 @@ services:
       - backend_uploads_staging:/app/uploads
       - ./credentials.json:/app/credentials.json
       - ./token.json:/app/token.json
+      - ./backups:/app/backups
     depends_on:
       - db
       - redis
@@ -67,6 +68,7 @@ services:
     volumes:
       - ./credentials.json:/app/credentials.json
       - ./token.json:/app/token.json
+      - ./backups:/app/backups
     depends_on:
       - db
     command: python run_backup_scheduler.py

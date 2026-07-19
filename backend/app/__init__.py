@@ -38,7 +38,7 @@ import sentry_sdk
 sentry_sdk.init(
     dsn="https://761742710e0e92ac03ddef77adc2fc23@o4511698789728256.ingest.de.sentry.io/4511699057836112",
     # Add data like request headers and IP for users,
-    send_default_pii=True,
+    send_default_pii=False,
     # Set traces_sample_rate to 1.0 to capture 100% of transactions for tracing.
     traces_sample_rate=1.0,
 )

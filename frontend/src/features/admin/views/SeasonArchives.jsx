@@ -124,7 +124,7 @@ const SeasonArchives = () => {
                         fontWeight: '600',
                         cursor: printingId === archive.id ? 'not-allowed' : 'pointer',
                         opacity: printingId === archive.id ? 0.7 : 1,
-                        transition: 'all 0.2s'
+                        transition: 'opacity 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s'
                       }}
                       onMouseOver={(e) => {
                         if (printingId !== archive.id) {
