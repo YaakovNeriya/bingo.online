@@ -75,9 +75,10 @@ export default function SocialShareCard({ url, title }) {
             className="social-icon"
             style={{ backgroundColor: social.color }}
           >
-            <SocialIcon social={social} />
-            {social.name === "העתק קישור" && (
-              <span className={`copy-tooltip ${copied ? 'visible' : ''}`}>הועתק!</span>
+            {social.name === "העתק קישור" && copied ? (
+              <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>הועתק!</span>
+            ) : (
+              <SocialIcon social={social} />
             )}
           </a>
         ))}
@@ -174,39 +175,6 @@ export default function SocialShareCard({ url, title }) {
           transform: scale(0.9);
           transition-duration: 0.1s;
         }
-
-        .copy-tooltip {
-          position: absolute;
-          bottom: 130%;
-          background-color: #1e293b;
-          color: white;
-          padding: 6px 12px;
-          border-radius: 8px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          opacity: 0;
-          visibility: hidden;
-          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          transform: translateY(10px) scale(0.9);
-          white-space: nowrap;
-          pointer-events: none;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          z-index: 10;
-        }
-        .copy-tooltip::after {
-          content: '';
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          border-width: 6px;
-          border-style: solid;
-          border-color: #1e293b transparent transparent transparent;
-        }
-        .copy-tooltip.visible {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0) scale(1);        }
 
         @keyframes rotateBg {
           from { transform: translate(-50%, -50%) rotate(0deg); }

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Share2, X, MessageCircle, Facebook, Send, Link } from 'lucide-react';
+import { useModalBack } from '../../hooks/useModalBack';
 
 const ShareWidget = ({ url, title, customClass }) => {
   const [modalOpen, setModalOpen] = useState(false);
+
+  useModalBack(modalOpen, () => setModalOpen(false), 'share_widget');
 
   const handleShare = async () => {
     // If native share is supported, try it first
@@ -37,33 +40,14 @@ const ShareWidget = ({ url, title, customClass }) => {
     setModalOpen(false);
   };
 
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <>
       <button 
-        className={customClass || ""}
+        className={customClass || "share-widget-btn"}
         onClick={handleShare}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={customClass ? undefined : {
-          display: 'grid',
-          placeItems: 'center',
-          padding: '10px',
-          border: 'none',
-          background: '#e8e8e8',
-          boxShadow: isHovered ? '2px 2px 5px #cacaca, -2px -2px 5px #ffffff' : '5px 5px 12px #cacaca, -5px -5px 12px #ffffff',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          color: '#555',
-          transition: 'box-shadow 0.2s ease',
-          flexShrink: 0,
-          width: '44px',
-          height: '44px'
-        }}
         title="שתף"
       >
-        <Share2 size={20} />
+        <Share2 className="share-widget-icon" size={20} />
       </button>
 
       {modalOpen && createPortal(

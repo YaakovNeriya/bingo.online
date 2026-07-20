@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Minus, Plus } from 'lucide-react';
+import { useModalBack } from '../../../hooks/useModalBack';
 
 export const CartEditModal = ({
   editingItem,
@@ -11,6 +12,8 @@ export const CartEditModal = ({
   setEditUnits,
   handleSaveEdit
 }) => {
+  useModalBack(Boolean(editingItem), () => setEditingItem(null), 'cart_edit_modal');
+
   if (!editingItem) return null;
 
   return (

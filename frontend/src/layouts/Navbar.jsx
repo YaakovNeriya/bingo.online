@@ -3,10 +3,11 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../features/auth/AuthContext';
 import { CartContext } from '../features/cart/CartContext';
-import { ShoppingCart, LogOut, Shield, Menu, X, User } from 'lucide-react';
+import { ShoppingCart, LogOut, Shield, Menu, X, User, PhoneCall } from 'lucide-react';
 import client from '../api/client';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import NavbarSearch from './NavbarSearch';
+import { useModalBack } from '../hooks/useModalBack';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -20,6 +21,8 @@ const Navbar = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isSearchActive, setIsSearchActive] = useState(false);
   
+  useModalBack(isDrawerOpen, () => setIsDrawerOpen(false), 'hamburger_drawer');
+
   const prevCartCountRef = useRef(cartCount);
 
   useEffect(() => {
@@ -315,14 +318,12 @@ const Navbar = () => {
               flex: 1,
               display: 'flex',
               alignItems: 'center',
-              background: 'var(--glass-bg, rgba(255, 255, 255, 0.85))',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
+              background: '#ffffff',
               border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.4))',
               borderRadius: '999px',
               padding: '0.5rem 1rem',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
               gap: '0.75rem',
+              marginRight: '10px'
             }}>
               {/* Cart (Right inside Pill - RTL) */}
               <Link to="/cart" style={{ display: 'flex', alignItems: 'center', color: 'var(--primary-color)', position: 'relative' }}>
@@ -409,8 +410,8 @@ const Navbar = () => {
               <NavbarSearch isMobile={isMobile} isSearchActive={isSearchActive} setIsSearchActive={setIsSearchActive} />
             </div>
 
-            {/* Login Button (if not logged in) - Outside Pill (Left - RTL) */}
-            {!user && (
+            {/* Login Button (if not logged in) or Contact Us (if logged in) - Outside Pill (Left - RTL) */}
+            {!user ? (
               <Link 
                 to="/login"
                 style={{ 
@@ -419,7 +420,7 @@ const Navbar = () => {
                   alignItems: 'center', 
                   justifyContent: 'center',
                   color: 'var(--primary-color)',
-                  background: 'var(--glass-bg, rgba(255, 255, 255, 0.85))',
+                  background: '#ffffff',
                   border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.4))',
                   borderRadius: '50%',
                   width: '42px',
@@ -430,6 +431,50 @@ const Navbar = () => {
               >
                 <User size={22} strokeWidth={2.2} />
               </Link>
+            ) : (
+              <a 
+                href={`https://wa.me/${(settings.about_whatsapp || '').replace(/\D/g, '').replace(/^0/, '972') || '972546594085'}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="צור קשר"
+                style={{ 
+                  flexShrink: 0,
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '42px',
+                  height: '42px',
+                  // boxShadow: '0 4px 15px #25d365da',
+                  textDecoration: 'none',
+                  position: 'relative',
+                  overflow: 'visible'
+                }}
+              >
+                <svg 
+                  viewBox="0 0 100 100" 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '-15px', 
+                    left: '-30px', 
+                    width: '100px', 
+                    height: '100px', 
+                    pointerEvents: 'none',
+                    overflow: 'visible'
+                  }}
+                >
+                  <path id="contactArcTop" d="M 12,50 A 38,38 0 0,1 88,50" fill="none" />
+                  <text style={{ fontSize: '15px', fontWeight: '800', fill: '#128C7E', letterSpacing: '0.5px' }}>
+                    <textPath href="#contactArcTop" startOffset="50%" textAnchor="middle">
+                      צור קשר
+                    </textPath>
+                  </text>
+                </svg>
+                <PhoneCall size={20} strokeWidth={2.2} style={{ marginTop: '4px' }} />
+              </a>
             )}
 
           </div>

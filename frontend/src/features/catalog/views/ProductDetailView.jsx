@@ -55,11 +55,11 @@ const ProductDetailView = () => {
   return (
     <div className="container" style={{ paddingBottom: '4rem' }}>
       {/* Breadcrumb / Top Navigation */}
-      <div style={{ marginBottom: '1.5rem', fontSize: '0.9rem', color: 'var(--text-light)' }}>
+      <div style={{ marginBottom: '0.75rem', fontSize: '0.85rem', color: 'var(--text-light)', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
         <Link to="/" style={{ color: 'var(--primary-color)', textDecoration: 'none' }}>חנות</Link>
-        <span style={{ margin: '0 0.5rem' }}>/</span>
+        <span style={{ margin: '0 0.4rem' }}>/</span>
         <span>{productModel.type_name}</span>
-        <span style={{ margin: '0 0.5rem' }}>/</span>
+        <span style={{ margin: '0 0.4rem' }}>/</span>
         <span style={{ color: 'var(--text-color)' }}>{productModel.name}</span>
       </div>
 
@@ -127,8 +127,8 @@ const ProductDetailView = () => {
             user={user} 
           />
 
-          <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>
-            {currentPrice}₪ <span style={{ fontSize: '1rem', color: 'var(--text-light)', fontWeight: 'normal' }}>/ מטר</span>
+          <div style={{ fontSize: 'clamp(1.4rem, 5vw, 1.85rem)', fontWeight: 'bold', margin: '0.25rem 0' }}>
+            {currentPrice}₪ <span style={{ fontSize: '0.9rem', color: 'var(--text-light)', fontWeight: 'normal' }}>/ מטר</span>
           </div>
 
           <ColorSelector 

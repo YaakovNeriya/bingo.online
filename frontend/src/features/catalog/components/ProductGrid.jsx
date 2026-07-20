@@ -10,7 +10,7 @@ export const ProductGrid = ({
 }) => {
   if (isFetching) {
     return (
-      <div className="product-category-container" style={{ marginTop: '2rem' }}>
+      <div className="product-category-container">
         {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
       </div>
     );
@@ -18,7 +18,7 @@ export const ProductGrid = ({
 
   return (
     <>
-      <div className="product-category-container" style={{ marginTop: '2rem' }}>
+      <div className="product-category-container">
         {flattenedItems.slice(0, visibleCount).map((item, idx) => {
           if (item.type === 'header') {
             return (

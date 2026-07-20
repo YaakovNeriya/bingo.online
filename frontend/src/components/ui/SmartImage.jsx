@@ -53,6 +53,8 @@ const SmartImage = ({ src, alt, style, className, hidePlayIcon = false, eager = 
   const containerRef = React.useRef(null);
   const observerRef = React.useRef(null);
   const timeoutRef = React.useRef(null);
+  const playerRef = React.useRef(null);
+  const cleanupTimerRef = React.useRef(null);
 
   useEffect(() => {
     if (wistiaId && !lightboxMode && containerRef.current) {
@@ -80,62 +82,80 @@ const SmartImage = ({ src, alt, style, className, hidePlayIcon = false, eager = 
   }, [wistiaId, lightboxMode]);
 
   useEffect(() => {
-    let isCancelled = false;
-    let activePlayer = null;
+    if (!lightboxMode || !wistiaId || !containerRef.current) return;
 
-    if (lightboxMode && wistiaId && containerRef.current) {
+    // Cancel any pending cleanup from a StrictMode unmount/remount cycle
+    if (cleanupTimerRef.current) {
+      clearTimeout(cleanupTimerRef.current);
+      cleanupTimerRef.current = null;
+    }
+
+    let isCancelled = false;
+
+    // If the player already exists in our ref from a previous mount (StrictMode),
+    // reuse it instantly instead of creating a new one.
+    if (playerRef.current?.getAttribute('media-id') === wistiaId) {
+      if (containerRef.current && !containerRef.current.contains(playerRef.current)) {
+        containerRef.current.innerHTML = '';
+        containerRef.current.appendChild(playerRef.current);
+      }
+    } else {
+      // Create or retrieve a new player
       import('../../utils/WistiaSmartPreloader').then((module) => {
-        if (isCancelled) return;
+        if (isCancelled || !containerRef.current) return;
         
-        activePlayer = module.WistiaSmartPreloader.getPlayerFor(wistiaId);
-        if (!activePlayer) {
-          activePlayer = document.createElement('wistia-player');
-          activePlayer.setAttribute('media-id', wistiaId);
-          activePlayer.setAttribute('preload', 'auto');
+        let player = module.WistiaSmartPreloader.getPlayerFor(wistiaId);
+        if (!player) {
+          player = document.createElement('wistia-player');
+          player.setAttribute('media-id', wistiaId);
+          player.setAttribute('preload', 'auto');
         }
-        activePlayer.setAttribute('autoplay', 'true');
-        // Since we are moving it to the lightbox, re-enable play buttons/controls
-        activePlayer.removeAttribute('big-play-button');
-        activePlayer.muted = false;
-        activePlayer.removeAttribute('muted');
+        player.setAttribute('autoplay', 'true');
+        player.removeAttribute('big-play-button');
+        player.muted = false;
+        player.removeAttribute('muted');
         
-        activePlayer.style.width = '100%';
-        activePlayer.style.height = '100%';
-        activePlayer.style.maxWidth = '100%';
-        activePlayer.style.maxHeight = '100%';
+        player.style.width = '100%';
+        player.style.height = '100%';
+        player.style.maxWidth = '100%';
+        player.style.maxHeight = '100%';
         
         containerRef.current.innerHTML = '';
-        containerRef.current.appendChild(activePlayer);
+        containerRef.current.appendChild(player);
+        playerRef.current = player;
       });
-      
-      return () => {
-        isCancelled = true;
-        
-        if (activePlayer) {
-          // Proper Wistia API cleanup: ask Wistia to pause and destroy its internal iframe
-          if (window._wq) {
-             window._wq.push({
-               id: wistiaId,
-               onReady: function(video) {
-                 try {
-                   video.pause();
-                   video.remove();
-                 } catch (e) {}
-               }
-             });
-          }
-          
-          activePlayer.removeAttribute('autoplay');
-          if (activePlayer.parentNode) {
-            activePlayer.parentNode.removeChild(activePlayer);
-          }
-        }
-
-        if (containerRef.current) {
-           containerRef.current.innerHTML = '';
-        }
-      };
     }
+    
+    return () => {
+      isCancelled = true;
+      const capturedWistiaId = wistiaId;
+      
+      // Delay cleanup by 150ms to survive React StrictMode double-mount.
+      // If the component remounts within 150ms (StrictMode), the timer is
+      // cancelled above and the player survives untouched.
+      // If it's a real unmount (lightbox closing), the timer fires and cleans up.
+      cleanupTimerRef.current = setTimeout(() => {
+        const player = playerRef.current;
+        if (player) {
+          if (window._wq) {
+            window._wq.push({
+              id: capturedWistiaId,
+              onReady: function(video) {
+                try { video.pause(); video.remove(); } catch (e) {}
+              }
+            });
+          }
+          player.removeAttribute('autoplay');
+          if (player.parentNode) {
+            player.parentNode.removeChild(player);
+          }
+          playerRef.current = null;
+        }
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
+        }
+      }, 150);
+    };
   }, [lightboxMode, wistiaId]);
 
   if (!src) return null;

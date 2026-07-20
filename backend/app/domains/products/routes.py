@@ -10,11 +10,20 @@ router = APIRouter()
 @router.get("/public/settings")
 async def get_public_settings(db: AsyncSession = Depends(get_db)):
     from app.domains.admin.models import SiteSetting
+    from app.domains.users.models import User
     from sqlalchemy import select
     result = await db.execute(select(SiteSetting))
     settings = result.scalars().all()
     # Return as dict for easy access on frontend
-    return {s.key: s.value for s in settings}
+    settings_dict = {s.key: s.value for s in settings}
+    
+    # Dynamically link the whatsapp contact to the primary admin's phone
+    admin_result = await db.execute(select(User).where(User.is_superuser == True).order_by(User.id).limit(1))
+    admin_user = admin_result.scalar_one_or_none()
+    if admin_user and admin_user.phone:
+        settings_dict["about_whatsapp"] = admin_user.phone
+        
+    return settings_dict
 
 @router.get("/catalog", response_model=List[schemas.ProductTypeOut])
 async def get_catalog(db: AsyncSession = Depends(get_db)) -> Any:

@@ -8,8 +8,8 @@ const About = () => {
   const [aboutText, setAboutText] = useState(
     'ברוכים הבאים לבינגו בדים, המקום בו אופנה, יצירה ואיכות נפגשים.\nאנחנו מאמינים שלכל אחד מגיע ליצור עם הבדים הטובים והאיכותיים ביותר.\nהחזון שלנו הוא להביא לכם את הטרנדים החדשים ביותר היישר מהיצרן, תוך שמירה על מחירים הוגנים ושירות מכל הלב.'
   );
-  const [phone, setPhone] = useState('050-1234567');
-  const [whatsapp, setWhatsapp] = useState('050-1234567');
+  const [phone, setPhone] = useState('054-6594085');
+  const [whatsapp, setWhatsapp] = useState('054-6594085');
   const [email, setEmail] = useState('hello@bingo.online');
   const [address, setAddress] = useState('תל אביב יפו');
   const [imageUrl, setImageUrl] = useState('');
@@ -82,7 +82,6 @@ const About = () => {
       await Promise.all([
         client.patch('/admin/settings/about_text', { value: editText }),
         client.patch('/admin/settings/about_phone', { value: editPhone }),
-        client.patch('/admin/settings/about_whatsapp', { value: editWhatsapp }),
         client.patch('/admin/settings/about_email', { value: editEmail }),
         client.patch('/admin/settings/about_address', { value: editAddress }),
         client.patch('/admin/settings/about_image_url', { value: editImageUrl })
@@ -113,9 +112,9 @@ const About = () => {
             title="ערוך דף אודות"
             style={{
               position: 'absolute',
-              right: '1.5rem',
+              right: '1rem',
               top: '1rem',
-              background: 'linear-gradient(135deg, var(--primary-color) 0%, #2563eb 100%)',
+              background: '#ff0000ff',
               border: 'none',
               borderRadius: '50%',
               width: '45px',
@@ -124,13 +123,8 @@ const About = () => {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: '#ffffff',
-              boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-              transition: 'all 0.2s ease',
               zIndex: 10
             }}
-            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
             <Edit size={22} />
           </button>
@@ -168,7 +162,13 @@ const About = () => {
           {phone && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-light)', fontSize: '1.1rem' }}>
               <Phone size={20} color="var(--primary-color)" />
-              <span dir="ltr">{phone}</span>
+              <a 
+                href={`tel:${phone.replace(/\D/g, '')}`} 
+                style={{ color: 'inherit', textDecoration: 'none' }}
+                dir="ltr"
+              >
+                {phone}
+              </a>
             </div>
           )}
           {whatsapp && (
@@ -266,7 +266,7 @@ const About = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div style={{ textAlign: 'right' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>טלפון</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>טלפון החנות (לשיחות)</label>
                   <input
                     type="text"
                     value={editPhone}
@@ -276,13 +276,13 @@ const About = () => {
                   />
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>וואטסאפ</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>וואטסאפ (מסונכרן למשתמש שלך)</label>
                   <input
                     type="text"
                     value={editWhatsapp}
-                    onChange={(e) => setEditWhatsapp(e.target.value)}
+                    disabled
                     dir="ltr"
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.5)' }}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(200,200,200,0.3)', color: 'var(--text-light)', cursor: 'not-allowed' }}
                   />
                 </div>
               </div>

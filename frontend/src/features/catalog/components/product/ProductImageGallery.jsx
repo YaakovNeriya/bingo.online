@@ -7,11 +7,12 @@ const ProductImageGallery = ({ selectedSku, currentImageIndex, setCurrentImageIn
 
   return (
     <>
-      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         <ImageCarousel 
           images={selectedSku?.image_urls || []} 
           alt={selectedSku?.color_name || "מוצר"} 
-          height="400px" 
+          aspectRatio="1 / 1"
+          height="auto"
           onClick={() => {
             const currentImg = selectedSku?.image_urls?.[currentImageIndex];
             if (currentImg && (currentImg.includes('wistia.com') || currentImg.includes('wistia.net'))) {

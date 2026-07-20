@@ -3,10 +3,13 @@ import { createPortal } from 'react-dom';
 import { X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import SmartImage from './SmartImage';
+import { useModalBack } from '../../hooks/useModalBack';
 
 const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const touchRef = React.useRef({ startX: null, isMultiTouch: false });
+
+  useModalBack(true, onClose, 'image_lightbox');
 
   const imageList = images && images.length > 0 ? images : (src ? [src] : []);
 
@@ -139,36 +142,55 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
           }
         }}
       >
-        <TransformWrapper
-          initialScale={1}
-          minScale={1}
-          maxScale={5}
-          centerOnInit
-          wheel={{ wheelDisabled: false }}
-          doubleClick={{ disabled: false, step: 2 }}
-        >
-          {({ zoomIn, zoomOut, resetTransform }) => (
-            <TransformComponent wrapperStyle={{ width: "100%", height: "100%", touchAction: "none" }} contentStyle={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <SmartImage 
-                src={imageList[currentIndex]} 
-                alt={alt} 
-                lightboxMode={true}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  maxWidth: '90vw',
-                  maxHeight: '90vh',
-                  objectFit: 'contain',
-                  borderRadius: '4px',
-                  cursor: 'grab',
-                  userSelect: 'none',
-                  WebkitUserDrag: 'none'
-                }}
-                onClick={(e) => e.stopPropagation()} 
-              />
-            </TransformComponent>
-          )}
-        </TransformWrapper>
+        {/* Videos: render directly without TransformWrapper to avoid CSS transform stutter */}
+        {imageList[currentIndex] && (imageList[currentIndex].includes('wistia.com') || imageList[currentIndex].includes('wistia.net')) ? (
+          <SmartImage 
+            src={imageList[currentIndex]} 
+            alt={alt} 
+            lightboxMode={true}
+            style={{
+              width: '100%',
+              height: '100%',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              objectFit: 'contain',
+              borderRadius: '4px'
+            }}
+            onClick={(e) => e.stopPropagation()} 
+          />
+        ) : (
+          /* Images: use TransformWrapper for zoom/pan */
+          <TransformWrapper
+            initialScale={1}
+            minScale={1}
+            maxScale={5}
+            centerOnInit
+            wheel={{ wheelDisabled: false }}
+            doubleClick={{ disabled: false, step: 2 }}
+          >
+            {({ zoomIn, zoomOut, resetTransform }) => (
+              <TransformComponent wrapperStyle={{ width: "100%", height: "100%", touchAction: "none" }} contentStyle={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <SmartImage 
+                  src={imageList[currentIndex]} 
+                  alt={alt} 
+                  lightboxMode={true}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '90vw',
+                    maxHeight: '90vh',
+                    objectFit: 'contain',
+                    borderRadius: '4px',
+                    cursor: 'grab',
+                    userSelect: 'none',
+                    WebkitUserDrag: 'none'
+                  }}
+                  onClick={(e) => e.stopPropagation()} 
+                />
+              </TransformComponent>
+            )}
+          </TransformWrapper>
+        )}
       </div>
 
       {imageList.length > 1 && (
