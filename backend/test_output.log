@@ -1,0 +1,209 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.0, pluggy-1.6.0 -- /home/yaakov/Desktop/bingo.online/backend/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/yaakov/Desktop/bingo.online/backend
+configfile: pytest.ini
+plugins: asyncio-1.4.0, anyio-4.14.0, env-1.6.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collecting ... collected 1 item
+
+tests/test_orders.py::test_toggle_item_returns_new_cart_id FAILED        [100%]
+
+=================================== FAILURES ===================================
+_____________________ test_toggle_item_returns_new_cart_id _____________________
+
+client = <httpx.AsyncClient object at 0x7e03139c0ce0>
+db_session = <sqlalchemy.orm.session.AsyncSession object at 0x7e031387d220>
+
+    @pytest.mark.asyncio
+    async def test_toggle_item_returns_new_cart_id(client: AsyncClient, db_session):
+        from app.domains.users.models import Region, User
+        from app.core.security import get_password_hash
+        from app.domains.products.models import ProductModel, ColorSKU, ProductType
+    
+        # 1. Setup
+        region = Region(name="South", shipping_cost=Decimal("10.00"), delivery_days=2)
+        db_session.add(region)
+        await db_session.commit()
+        await db_session.refresh(region)
+    
+        user = User(
+            email="toggle@bingo.online",
+            hashed_password=get_password_hash("password123"),
+            first_name="Toggle",
+            last_name="Tester",
+            phone="0501112223",
+            region_id=region.id,
+            is_active=True
+        )
+        db_session.add(user)
+    
+        ptype = ProductType(name="Toggle Category")
+        db_session.add(ptype)
+        await db_session.commit()
+        await db_session.refresh(ptype)
+    
+        product = ProductModel(
+            name="Toggle Fabric",
+            product_type_id=ptype.id,
+            base_price=Decimal("50.00"),
+            fabric_height=Decimal("1.50")
+        )
+        db_session.add(product)
+        await db_session.commit()
+        await db_session.refresh(product)
+    
+        sku = ColorSKU(
+            product_model_id=product.id,
+            color_name="Green",
+            stock_meters=Decimal("100.00"),
+            is_active=True
+        )
+        db_session.add(sku)
+        await db_session.commit()
+        await db_session.refresh(sku)
+    
+        # 2. Login
+        response = await client.post(
+            "/api/v1/users/login",
+            data={"username": "toggle@bingo.online", "password": "password123"}
+        )
+        token = response.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+    
+        # 3. Add to cart
+        payload = {"color_sku_id": sku.id, "length_meters": 5.0, "units": 1}
+        await client.post("/api/v1/orders/cart", json=payload, headers=headers)
+    
+        cart_res = await client.get("/api/v1/orders/cart", headers=headers)
+        item_ids = [item["id"] for item in cart_res.json()["items"]]
+    
+        # 4. Checkout to move to active order
+        checkout_res = await client.post("/api/v1/orders/checkout", json={"selected_item_ids": item_ids}, headers=headers)
+        assert checkout_res.status_code == 200
+    
+        order_data = checkout_res.json()
+        order_item_id = order_data["items"][0]["id"]
+    
+        # Verify stock was deducted (100 - 5 = 95)
+        await db_session.refresh(sku)
+        assert sku.stock_meters == Decimal("95.00")
+    
+        # 5. Remove item from active order (simulate toggling off checkbox)
+        remove_res = await client.post(f"/api/v1/orders/active/items/{order_item_id}/remove", headers=headers)
+        assert remove_res.status_code == 200
+        remove_data = remove_res.json()
+        assert "cart" in remove_data
+        assert "new_cart_item_id" in remove_data
+        assert isinstance(remove_data["new_cart_item_id"], int)
+    
+        # 6. Verify stock was restored
+>       await db_session.refresh(sku)
+
+tests/test_orders.py:293: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.12/site-packages/sqlalchemy/ext/asyncio/session.py:328: in refresh
+    await greenlet_spawn(
+.venv/lib/python3.12/site-packages/sqlalchemy/util/_concurrency_py3k.py:190: in greenlet_spawn
+    result = context.switch(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:3155: in refresh
+    self._expire_state(state, attribute_names)
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:3281: in _expire_state
+    self._validate_persistent(state)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.Session object at 0x7e031387ee40>
+state = <sqlalchemy.orm.state.InstanceState object at 0x7e03138d6c30>
+
+    def _validate_persistent(self, state: InstanceState[Any]) -> None:
+        if not self.identity_map.contains_state(state):
+>           raise sa_exc.InvalidRequestError(
+                "Instance '%s' is not persistent within this Session"
+                % state_str(state)
+            )
+E           sqlalchemy.exc.InvalidRequestError: Instance '<ColorSKU at 0x7e031372eed0>' is not persistent within this Session
+
+.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:4139: InvalidRequestError
+--------------------------- Captured stdout teardown ---------------------------
+Error sending email: SMTP AUTH extension not supported by server.
+=============================== warnings summary ===============================
+app/core/config.py:4
+  /home/yaakov/Desktop/bingo.online/backend/app/core/config.py:4: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class Settings(BaseSettings):
+
+app/domains/users/schemas.py:46
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/users/schemas.py:46: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class UserOut(UserBase):
+
+app/domains/users/schemas.py:66
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/users/schemas.py:66: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class RegionOut(BaseModel):
+
+.venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /home/yaakov/Desktop/bingo.online/backend/.venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+app/domains/products/schemas.py:5
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/products/schemas.py:5: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class ColorSKUOut(BaseModel):
+
+app/domains/products/schemas.py:18
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/products/schemas.py:18: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class ProductModelOut(BaseModel):
+
+app/domains/products/schemas.py:28
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/products/schemas.py:28: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class ProductTypeOut(BaseModel):
+
+app/domains/orders/schemas.py:32
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/orders/schemas.py:32: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class SimpleProductModelOut(BaseModel):
+
+app/domains/orders/schemas.py:48
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/orders/schemas.py:48: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class CartItemOut(BaseModel):
+
+app/domains/orders/schemas.py:58
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/orders/schemas.py:58: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class CartOut(BaseModel):
+
+app/domains/orders/schemas.py:68
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/orders/schemas.py:68: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class OrderItemOut(BaseModel):
+
+app/domains/orders/schemas.py:85
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/orders/schemas.py:85: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class OrderOut(BaseModel):
+
+app/domains/admin/schemas.py:94
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/admin/schemas.py:94: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class SeasonArchiveOut(BaseModel):
+
+app/domains/admin/schemas.py:103
+  /home/yaakov/Desktop/bingo.online/backend/app/domains/admin/schemas.py:103: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class SeasonArchiveListOut(BaseModel):
+
+tests/test_orders.py::test_toggle_item_returns_new_cart_id
+  /home/yaakov/Desktop/bingo.online/backend/app/core/security.py:36: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+
+tests/test_orders.py::test_toggle_item_returns_new_cart_id
+  /home/yaakov/Desktop/bingo.online/backend/.venv/lib/python3.12/site-packages/sqlalchemy/sql/schema.py:3623: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+.venv/lib/python3.12/site-packages/_pytest/cacheprovider.py:469
+  /home/yaakov/Desktop/bingo.online/backend/.venv/lib/python3.12/site-packages/_pytest/cacheprovider.py:469: PytestCacheWarning: cache could not write path /home/yaakov/Desktop/bingo.online/backend/.pytest_cache/v/cache/nodeids: [Errno 13] Permission denied: '/home/yaakov/Desktop/bingo.online/backend/.pytest_cache/v/cache/nodeids'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+.venv/lib/python3.12/site-packages/_pytest/cacheprovider.py:423
+  /home/yaakov/Desktop/bingo.online/backend/.venv/lib/python3.12/site-packages/_pytest/cacheprovider.py:423: PytestCacheWarning: cache could not write path /home/yaakov/Desktop/bingo.online/backend/.pytest_cache/v/cache/lastfailed: [Errno 13] Permission denied: '/home/yaakov/Desktop/bingo.online/backend/.pytest_cache/v/cache/lastfailed'
+    config.cache.set("cache/lastfailed", self.lastfailed)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_orders.py::test_toggle_item_returns_new_cart_id - sqlalchem...
+======================== 1 failed, 18 warnings in 3.61s ========================
+Sentry is attempting to send 2 pending events
+Waiting up to 2 seconds
+Press Ctrl-C to quit
