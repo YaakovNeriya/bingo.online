@@ -367,3 +367,100 @@ async def test_deadline_blocks_cart_operations(client: AsyncClient, db_session):
     # 4. Verify blocked by deadline
     assert add_res.status_code == 403
     assert "חלון ההזמנות לעונה זו נסגר" in add_res.json()["detail"]
+
+@pytest.mark.asyncio
+async def test_auto_add_to_active_order(client: AsyncClient, db_session):
+    from app.domains.users.models import Region, User
+    from app.core.security import get_password_hash
+    from app.domains.products.models import ProductModel, ProductType, ColorSKU
+    from app.domains.orders.models import Order, OrderItem, CartItem
+    from decimal import Decimal
+    from sqlalchemy import select
+    
+    # 1. Setup Data
+    region = Region(name="NorthAuto", shipping_cost=Decimal("20.00"), delivery_days=2)
+    db_session.add(region)
+    await db_session.commit()
+    await db_session.refresh(region)
+
+    user = User(
+        email="autoadd@bingo.online",
+        hashed_password=get_password_hash("password123"),
+        first_name="Auto",
+        last_name="Adder",
+        phone="0501112224",
+        region_id=region.id,
+        is_active=True
+    )
+    db_session.add(user)
+    
+    ptype = ProductType(name="AutoAdd Category")
+    db_session.add(ptype)
+    await db_session.commit()
+    await db_session.refresh(ptype)
+
+    product = ProductModel(
+        name="Auto Fabric",
+        product_type_id=ptype.id,
+        base_price=Decimal("100.00"),
+        fabric_height=Decimal("1.50")
+    )
+    db_session.add(product)
+    await db_session.commit()
+    await db_session.refresh(product)
+
+    sku = ColorSKU(
+        product_model_id=product.id,
+        color_name="Yellow",
+        stock_meters=Decimal("50.00"),
+        is_active=True
+    )
+    db_session.add(sku)
+    await db_session.commit()
+    await db_session.refresh(sku)
+
+    # 2. Login
+    response = await client.post(
+        "/api/v1/users/login",
+        data={"username": "autoadd@bingo.online", "password": "password123"}
+    )
+    token = response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 3. Create active order manually
+    order = Order(
+        user_id=user.id,
+        status="order_unpaid",
+        total_price=Decimal("20.00") # Just shipping cost initially
+    )
+    db_session.add(order)
+    await db_session.commit()
+    await db_session.refresh(order)
+
+    # 4. Trigger Auto-Add
+    payload = {"color_sku_id": sku.id, "length_meters": 2.0, "units": 2}
+    add_res = await client.post("/api/v1/orders/cart", json=payload, headers=headers)
+    assert add_res.status_code == 200
+    
+    data = add_res.json()
+    assert data.get("active_order") is not None
+    
+    # 5. Verify Database State
+    # No cart items should exist
+    cart_items_count = await db_session.scalar(select(CartItem).where(CartItem.color_sku_id == sku.id))
+    assert cart_items_count is None
+    
+    # One order item should exist in the active order
+    order_items_result = await db_session.execute(select(OrderItem).where(OrderItem.order_id == order.id))
+    order_items = order_items_result.scalars().all()
+    assert len(order_items) == 1
+    assert float(order_items[0].length_meters) == 2.0
+    assert order_items[0].units == 2
+    
+    # Total price should be updated: 20 (shipping) + (100 * 4) = 420
+    await db_session.refresh(order)
+    assert float(order.total_price) == 420.00
+    
+    # Stock should be deducted: 50 - 4 = 46
+    await db_session.refresh(sku)
+    assert float(sku.stock_meters) == 46.00
