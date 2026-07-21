@@ -72,7 +72,7 @@ async def revert_order_to_cart(
 ) -> Any:
     return await services.revert_order_to_cart(db, current_user.id, order_id)
 
-@router.post("/active/items/{cart_item_id}/add", response_model=schemas.OrderOut)
+@router.post("/active/items/{cart_item_id}/add", response_model=schemas.ToggleItemResponse)
 async def move_cart_item_to_order(
     cart_item_id: int,
     db: AsyncSession = Depends(get_db),
@@ -80,7 +80,7 @@ async def move_cart_item_to_order(
 ) -> Any:
     return await services.move_cart_item_to_order(db, current_user, cart_item_id)
 
-@router.post("/active/items/{order_item_id}/remove")
+@router.post("/active/items/{order_item_id}/remove", response_model=schemas.ToggleItemResponse)
 async def remove_item_from_active_order(order_item_id: int, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     return await services.move_order_item_to_cart(db, current_user, order_item_id)
 

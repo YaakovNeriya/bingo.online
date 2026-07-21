@@ -11,6 +11,16 @@ export const CartProvider = ({ children }) => {
   const [hasActiveOrder, setHasActiveOrder] = useState(false);
   const [cartItems, setCartItems] = useState([]);
 
+  const syncCartContext = useCallback((cartData, orderData) => {
+    const cartItemsCount = cartData?.items ? cartData.items.reduce((total, item) => total + item.units, 0) : 0;
+    const orderItemsCount = orderData?.items ? orderData.items.reduce((total, item) => total + item.units, 0) : 0;
+    
+    setCartCount(cartItemsCount + orderItemsCount);
+    setHasUnsentItems(cartItemsCount > 0);
+    setHasActiveOrder(orderItemsCount > 0 || (orderData && orderData.id));
+    setCartItems([...(cartData?.items || []), ...(orderData?.items || [])]);
+  }, []);
+
   const fetchCartCount = useCallback(async () => {
     if (!user) {
       setCartCount(0);
@@ -21,13 +31,7 @@ export const CartProvider = ({ children }) => {
         client.get('/orders/cart').catch(() => ({ data: { items: [] } })),
         client.get('/orders/active').catch(() => ({ data: { items: [] } }))
       ]);
-      const cartItemsCount = cartRes.data?.items ? cartRes.data.items.reduce((total, item) => total + item.units, 0) : 0;
-      const orderItemsCount = orderRes.data?.items ? orderRes.data.items.reduce((total, item) => total + item.units, 0) : 0;
-      
-      setCartCount(cartItemsCount + orderItemsCount);
-      setHasUnsentItems(cartItemsCount > 0);
-      setHasActiveOrder(orderItemsCount > 0 || (orderRes.data && orderRes.data.id));
-      setCartItems([...(cartRes.data?.items || []), ...(orderRes.data?.items || [])]);
+      syncCartContext(cartRes.data, orderRes.data);
     } catch (err) {
       console.error("Failed to fetch cart count", err);
     }
@@ -48,7 +52,7 @@ export const CartProvider = ({ children }) => {
   }, [fetchCartCount]);
 
   return (
-    <CartContext.Provider value={{ cartCount, fetchCartCount, hasUnsentItems, hasActiveOrder, cartItems }}>
+    <CartContext.Provider value={{ cartCount, fetchCartCount, hasUnsentItems, hasActiveOrder, cartItems, syncCartContext }}>
       {children}
     </CartContext.Provider>
   );

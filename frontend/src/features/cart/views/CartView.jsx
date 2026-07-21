@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../auth/AuthContext';
 import { useCartState } from '../hooks/useCartState';
 import { useCartActions } from '../hooks/useCartActions';
@@ -9,6 +9,7 @@ import { CreditCard } from 'lucide-react';
 
 const CartView = () => {
   const { user } = useContext(AuthContext);
+  const [showPaymentMsg, setShowPaymentMsg] = useState(false);
 
   const {
     cart,
@@ -27,7 +28,8 @@ const CartView = () => {
     setEditUnits,
     displayItems,
     cartTotalPrice,
-    setItemSelection
+    setItemSelection,
+    syncCartState
   } = useCartState();
 
   const {
@@ -36,7 +38,8 @@ const CartView = () => {
     handleSaveEdit,
     onTrashClick,
     handleToggleSendOrder,
-    handleToggleItem
+    handleToggleItem,
+    updatingItems
   } = useCartActions({
     cart,
     activeOrder,
@@ -49,7 +52,8 @@ const CartView = () => {
     setEditingItem,
     setError,
     toggleItemSelection,
-    setItemSelection
+    setItemSelection,
+    syncCartState
   });
 
   const isDeadlinePassed = user?.applicable_deadline && new Date() > new Date(user.applicable_deadline);
@@ -112,6 +116,7 @@ const CartView = () => {
                   onTrashClick={onTrashClick}
                   confirmDeleteId={confirmDeleteId}
                   openEditModal={item.is_order_item ? undefined : openEditModal}
+                  isUpdating={updatingItems[item.unique_id]}
                 />
               ))}
             </div>
@@ -124,11 +129,13 @@ const CartView = () => {
               </div>
               <button 
                 className="btn btn-primary" 
-                disabled={true} 
-                title="מערכת סליקה טרם הופעלה"
-                style={{ opacity: 0.5, cursor: 'not-allowed', padding: '0.5rem 1rem', fontSize: '0.95rem', borderRadius: '999px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}
+                onClick={() => {
+                  setShowPaymentMsg(true);
+                  setTimeout(() => setShowPaymentMsg(false), 3000);
+                }}
+                style={{ opacity: showPaymentMsg ? 1 : 0.8, padding: '0.5rem 1rem', fontSize: '0.95rem', borderRadius: '999px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0, transition: 'all 0.3s', minWidth: '160px', justifyContent: 'center' }}
               >
-                <CreditCard size={22} /> לתשלום מאובטח
+                <CreditCard size={22} /> {showPaymentMsg ? 'התשלום ייגבה בהמשך' : 'לתשלום מאובטח'}
               </button>
             </div>
           </>

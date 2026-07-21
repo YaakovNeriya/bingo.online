@@ -14,11 +14,13 @@ export const useCartActions = ({
   setEditingItem,
   setError,
   toggleItemSelection,
-  setItemSelection
+  setItemSelection,
+  syncCartState
 }) => {
-  const { fetchCartCount } = useContext(CartContext);
+  const { fetchCartCount, syncCartContext } = useContext(CartContext);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [isSendingOrder, setIsSendingOrder] = useState(false);
+  const [updatingItems, setUpdatingItems] = useState({});
   const deleteTimerRef = useRef(null);
 
   useEffect(() => {
@@ -123,21 +125,27 @@ export const useCartActions = ({
 
   const handleToggleItem = async (item) => {
     toggleItemSelection(item.unique_id);
+    
     if (activeOrder) {
+      setUpdatingItems(prev => ({ ...prev, [item.unique_id]: true }));
       try {
         if (item.is_order_item) {
           const res = await client.post(`/orders/active/items/${item.id}/remove`);
           if (res.data?.new_cart_item_id) {
             setItemSelection(`cart_${res.data.new_cart_item_id}`, false);
           }
+          syncCartState(res.data.cart, res.data.active_order);
+          syncCartContext(res.data.cart, res.data.active_order);
         } else {
-          await client.post(`/orders/active/items/${item.id}/add`);
+          const res = await client.post(`/orders/active/items/${item.id}/add`);
+          syncCartState(res.data.cart, res.data.active_order);
+          syncCartContext(res.data.cart, res.data.active_order);
         }
-        fetchCart();
-        fetchCartCount();
       } catch (err) {
         showError("שגיאה בעדכון הפריט: " + (err.response?.data?.detail || err.message));
         toggleItemSelection(item.unique_id);
+      } finally {
+        setUpdatingItems(prev => ({ ...prev, [item.unique_id]: false }));
       }
     }
   };
@@ -149,6 +157,7 @@ export const useCartActions = ({
     handleSaveEdit,
     onTrashClick,
     handleToggleSendOrder,
-    handleToggleItem
+    handleToggleItem,
+    updatingItems
   };
 };

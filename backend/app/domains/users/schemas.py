@@ -9,7 +9,7 @@ def validate_israeli_phone(v: Optional[str]) -> Optional[str]:
         return v
     try:
         parsed = phonenumbers.parse(v, "IL")
-        if not phonenumbers.is_valid_number(parsed):
+        if not phonenumbers.is_possible_number(parsed):
             raise ValueError("מספר טלפון לא תקין")
         return v
     except phonenumbers.NumberParseException:

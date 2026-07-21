@@ -42,6 +42,28 @@ export const useCartState = () => {
     }
   }, []);
 
+  const syncCartState = useCallback((cartData, activeOrderData) => {
+    setCart(cartData);
+    setActiveOrder(activeOrderData);
+    
+    setSelectedItems(prev => {
+      const merged = {};
+      if (cartData?.items) {
+        cartData.items.forEach(item => {
+          const defaultVal = true; // Always check new items by default
+          merged[`cart_${item.id}`] = prev.hasOwnProperty(`cart_${item.id}`) ? prev[`cart_${item.id}`] : defaultVal;
+        });
+      }
+      
+      if (activeOrderData?.items) {
+        activeOrderData.items.forEach(item => {
+          merged[`order_${item.id}`] = prev.hasOwnProperty(`order_${item.id}`) ? prev[`order_${item.id}`] : true;
+        });
+      }
+      return merged;
+    });
+  }, []);
+
   const fetchCart = useCallback(async () => {
     try {
       const res = await client.get('/orders/cart');
@@ -60,23 +82,7 @@ export const useCartState = () => {
         }
       }
       
-      setCart(cartData);
-      setActiveOrder(activeOrderData);
-      
-      setSelectedItems(prev => {
-        const merged = {};
-        cartData.items.forEach(item => {
-          const defaultVal = true; // Always check new items by default
-          merged[`cart_${item.id}`] = prev.hasOwnProperty(`cart_${item.id}`) ? prev[`cart_${item.id}`] : defaultVal;
-        });
-        
-        if (activeOrderData) {
-          activeOrderData.items.forEach(item => {
-            merged[`order_${item.id}`] = prev.hasOwnProperty(`order_${item.id}`) ? prev[`order_${item.id}`] : true;
-          });
-        }
-        return merged;
-      });
+      syncCartState(cartData, activeOrderData);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setError('אנא התחבר כדי לצפות בעגלה שלך.');
@@ -138,6 +144,7 @@ export const useCartState = () => {
     toggleItemSelection,
     setItemSelection,
     fetchCart,
+    syncCartState,
     editingItem,
     setEditingItem,
     editLength,

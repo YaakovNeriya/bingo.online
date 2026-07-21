@@ -31,7 +31,7 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
             result = await db.execute(stmt)
             return result.scalars().first()
         else:
-            raise AppException(status_code=400, detail="The user with this email already exists in the system.")
+            raise AppException(status_code=400, detail="כתובת המייל הזו כבר קיימת במערכת")
     
     pwd = user_in.password if user_in.password else generate_random_password()
     

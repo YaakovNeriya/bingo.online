@@ -120,15 +120,15 @@ const Navbar = () => {
                   <div 
                     className="hide-on-mobile-menu"
                     style={{ 
-                      background: 'rgba(255, 255, 255, 0.6)', 
-                      border: '1px solid rgba(255, 255, 255, 0.8)',
+                      background: 'rgba(255, 255, 255)', 
+                      border: '1px solid rgba(255, 255, 255)',
                       borderRadius: '9999px',
                       padding: '0.5rem 1.2rem',
                       fontSize: '1rem', 
                       fontWeight: '600', 
                       fontFamily: '"Assistant", sans-serif',
                       color: 'var(--primary-color)',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+                      // boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
                       userSelect: 'none',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease'
@@ -143,7 +143,7 @@ const Navbar = () => {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <User size={18} style={{ opacity: 0.8 }} />
+                      <User size={18}/>
                       <span>שלום, {user.first_name ? user.first_name : 'אורח'}</span>
                     </div>
                   </div>
@@ -154,7 +154,7 @@ const Navbar = () => {
                   <div 
                     className={`cart-button-container ${showTooltip ? 'explode-bubbles' : ''}`}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.6)',
+                      background: 'rgba(255, 255, 255)',
                       color: 'var(--primary-color)',
                       width: '43px',
                       height: '43px',
@@ -162,7 +162,7 @@ const Navbar = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+                      // boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
                       border: '1px solid rgba(255, 255, 255, 0.8)',
                       position: 'relative',
                       transition: 'all 0.3s ease'
@@ -240,7 +240,7 @@ const Navbar = () => {
                   title="התנתק"
                   style={{ 
                     background: 'linear-gradient(145deg, #ffffff, #f5f5f5)', 
-                    border: '1px solid rgba(159, 18, 57, 0.15)', 
+                    border: '1px solid rgba(159, 18, 57)', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
@@ -249,7 +249,7 @@ const Navbar = () => {
                     borderRadius: '50%',
                     color: '#9f1239',
                     cursor: 'pointer',
-                    boxShadow: '3px 3px 8px rgba(0,0,0,0.06), -3px -3px 8px #ffffff',
+                    // boxShadow: '3px 3px 8px rgba(0,0,0,0.06), -3px -3px 8px #ffffff',
                     transition: 'all 0.3s ease'
                   }}
                   onMouseOver={(e) => { 
@@ -294,7 +294,7 @@ const Navbar = () => {
                 width: '90px',
                 height: '60px',
                 background: 'rgba(255, 255, 255, 0.7)',
-                filter: 'blur(15px)',
+                filter: 'blur(10px)',
                 borderRadius: '50%',
                 zIndex: -1,
                 pointerEvents: 'none'
@@ -319,7 +319,7 @@ const Navbar = () => {
               display: 'flex',
               alignItems: 'center',
               background: '#ffffff',
-              border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.4))',
+              border: '1px solid var(--glass-border, rgba(255, 255, 255))',
               borderRadius: '999px',
               padding: '0.5rem 1rem',
               gap: '0.75rem',
@@ -331,8 +331,8 @@ const Navbar = () => {
                 {cartCount > 0 && (
                   <span style={{
                     position: 'absolute',
-                    top: '-12px',
-                    right: '-13px',
+                    top: '-13px',
+                    right: '-14px',
                     background: '#eab308',
                     color: 'white',
                     fontSize: '1rem',
@@ -343,8 +343,8 @@ const Navbar = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: '50%',
-                    boxShadow: '0 2px 6px rgba(234, 179, 8, 0.4)',
-                    border: '2px solid white'
+                    // boxShadow: '0 2px 6px rgba(234, 179, 8, 0.4)',
+                    // border: '2px solid rgba(249, 223, 90, 1)'
                   }}>{cartCount}</span>
                 )}
                 
@@ -355,17 +355,17 @@ const Navbar = () => {
                     top: '40px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    background: 'rgba(245, 158, 11, 0.95)',
+                    background: 'rgba(245, 158, 11)',
                     color: 'white',
                     padding: '0.4rem 1rem',
                     borderRadius: '8px',
                     fontSize: '0.9rem',
                     fontWeight: '600',
                     whiteSpace: 'nowrap',
-                    boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
+                    // boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
                     zIndex: 100,
                     pointerEvents: 'none',
-                    animation: 'fadeInDown 0.4s ease-out'
+                    animation: 'fadeInDown 0.5s ease-out'
                   }}>
                     <div style={{
                       content: '""',
@@ -375,7 +375,7 @@ const Navbar = () => {
                       transform: 'translateX(-50%) rotate(45deg)',
                       width: '10px',
                       height: '10px',
-                      background: 'rgba(245, 158, 11, 0.95)',
+                      background: 'rgba(245, 158, 11)',
                     }} />
                     שלח הזמנה
                   </div>
@@ -414,22 +414,44 @@ const Navbar = () => {
             {!user ? (
               <Link 
                 to="/login"
+                title="התחבר"
                 style={{ 
                   flexShrink: 0,
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  color: 'var(--primary-color)',
-                  background: '#ffffff',
-                  border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.4))',
+                  color: '#ffffff',
+                  background: 'linear-gradient(9deg, #023db2ff 0%, #0d214b 100%)',
+                  border: 'none',
                   borderRadius: '50%',
                   width: '42px',
                   height: '42px',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.06)',
-                  textDecoration: 'none'
+                  // boxShadow: '0 4px 15px rgba(23, 47, 94, 0.3)',
+                  textDecoration: 'none',
+                  position: 'relative',
+                  overflow: 'visible'
                 }}
               >
-                <User size={22} strokeWidth={2.2} />
+                <svg 
+                  viewBox="0 0 100 100" 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '-15px', 
+                    left: '-30px', 
+                    width: '100px', 
+                    height: '100px', 
+                    pointerEvents: 'none',
+                    overflow: 'visible'
+                  }}
+                >
+                  <path id="loginArcTop" d="M 12,50 A 38,38 0 0,1 88,50" fill="none" />
+                  <text style={{ fontSize: '15px', fontWeight: '800', fill: '#172f5e', letterSpacing: '0.5px' }}>
+                    <textPath href="#loginArcTop" startOffset="50%" textAnchor="middle">
+                      התחבר
+                    </textPath>
+                  </text>
+                </svg>
+                <User size={20} strokeWidth={2.2} />
               </Link>
             ) : (
               <a 

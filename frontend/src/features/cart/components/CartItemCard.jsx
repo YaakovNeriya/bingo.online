@@ -11,7 +11,8 @@ export const CartItemCard = ({
   isDeadlinePassed,
   onTrashClick,
   confirmDeleteId,
-  openEditModal
+  openEditModal,
+  isUpdating
 }) => {
   const pricePerMeter = item.color_sku.specific_price ?? item.color_sku.product_model.base_price;
   // Calculate using integer cents to avoid floating point errors
@@ -24,7 +25,15 @@ export const CartItemCard = ({
     : null;
 
   return (
-    <div className="cart-item-premium" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem' }}>
+    <div className="cart-item-premium" style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: '0.5rem', 
+      padding: '1rem',
+      opacity: isUpdating ? 0.5 : 1,
+      pointerEvents: isUpdating ? 'none' : 'auto',
+      transition: 'opacity 0.2s ease-in-out'
+    }}>
       
       {/* Top Section */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>

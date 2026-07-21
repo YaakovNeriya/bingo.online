@@ -111,7 +111,7 @@ const NavbarSearch = ({ isMobile, isSearchActive, setIsSearchActive }) => {
               width: '100%',
               color: 'var(--text-color)',
               fontFamily: '"Assistant", sans-serif',
-              fontSize: '0.95rem'
+              fontSize: '1rem'
             }}
           />
           {query && (
@@ -129,10 +129,10 @@ const NavbarSearch = ({ isMobile, isSearchActive, setIsSearchActive }) => {
             left: 0,
             right: 0,
             background: 'var(--glass-bg)',
-            backdropFilter: 'blur(20px)',
+            // backdropFilter: 'blur(20px)',
             border: '1px solid var(--glass-border)',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+            borderRadius: '10px',
+            // boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
             overflow: 'hidden',
             zIndex: 1000,
             maxHeight: '400px',

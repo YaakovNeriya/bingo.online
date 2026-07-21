@@ -18,7 +18,7 @@ export const CartHeader = ({
           style={{ 
             opacity: (isSendingOrder || (cartIsEmpty && !hasActiveOrder) || isDeadlinePassed) ? 0.6 : 1,
             cursor: (isSendingOrder || (cartIsEmpty && !hasActiveOrder) || isDeadlinePassed) ? 'not-allowed' : 'pointer',
-            backgroundColor: hasActiveOrder ? '#f59e0b' : '',
+            // backgroundColor: hasActiveOrder ? '#f59e0b' : '',
             width: '100%',
             maxWidth: '600px',
             fontSize: '1.2rem',

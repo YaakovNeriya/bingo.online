@@ -95,3 +95,9 @@ class OrderOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ToggleItemResponse(BaseModel):
+    cart: CartOut
+    active_order: Optional[OrderOut] = None
+    cart_count: int
+    new_cart_item_id: Optional[int] = None

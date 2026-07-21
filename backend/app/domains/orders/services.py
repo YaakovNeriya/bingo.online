@@ -342,7 +342,18 @@ async def move_cart_item_to_order(db: AsyncSession, user: User, cart_item_id: in
         await db.delete(cart_item)
         
     await delete_cache(CACHE_KEY_CATALOG)
-    return await get_active_order(db, user.id)
+    
+    # Clear the session cache to ensure we fetch fresh items from the DB
+    db.expunge_all()
+    
+    updated_order = await get_active_order(db, user.id)
+    updated_cart = await get_or_create_cart(db, user.id)
+    cart_count = sum(item.units for item in updated_cart.items) if updated_cart else 0
+    return {
+        "cart": updated_cart,
+        "active_order": updated_order,
+        "cart_count": cart_count
+    }
 
 async def move_order_item_to_cart(db: AsyncSession, user: User, order_item_id: int) -> dict:
     await _check_deadline_passed(db, user.id)
@@ -391,7 +402,19 @@ async def move_order_item_to_cart(db: AsyncSession, user: User, order_item_id: i
         new_cart_item_id = new_cart_item.id
         
     await delete_cache(CACHE_KEY_CATALOG)
-    return {"status": "success", "new_cart_item_id": new_cart_item_id}
+    
+    # Clear the session cache to ensure we fetch fresh items from the DB
+    db.expunge_all()
+    
+    updated_order = await get_active_order(db, user.id)
+    updated_cart = await get_or_create_cart(db, user.id)
+    cart_count = sum(item.units for item in updated_cart.items) if updated_cart else 0
+    return {
+        "cart": updated_cart,
+        "active_order": updated_order,
+        "cart_count": cart_count,
+        "new_cart_item_id": new_cart_item_id
+    }
 
 async def delete_active_order_item(db: AsyncSession, user: User, order_item_id: int) -> dict:
     await _check_deadline_passed(db, user.id)

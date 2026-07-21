@@ -169,7 +169,18 @@ const Login = () => {
       if (isLoginView) {
         setError('פרטי התחברות שגויים');
       } else {
-        setError(err.response?.data?.detail || 'שגיאה בהרשמה. ייתכן שהאימייל כבר קיים במערכת.');
+        let errorMsg = 'שגיאה בהרשמה. ייתכן שהאימייל כבר קיים במערכת.';
+        const detail = err.response?.data?.detail;
+        
+        if (detail) {
+          if (Array.isArray(detail)) {
+            // Extract messages from FastAPI validation array and clean up "Value error, " prefix
+            errorMsg = detail.map(d => (d.msg || '').replace('Value error, ', '')).join(', ');
+          } else if (typeof detail === 'string') {
+            errorMsg = detail;
+          }
+        }
+        setError(errorMsg);
       }
     }
   };
@@ -269,20 +280,6 @@ const Login = () => {
           </div>
         )}
 
-        {error && (
-          <div style={{ 
-            background: 'rgba(239, 68, 68, 0.1)', 
-            border: '1px solid var(--danger-color)', 
-            color: 'var(--danger-color)', 
-            padding: '1rem', 
-            borderRadius: '8px', 
-            marginBottom: '1.5rem',
-            textAlign: 'center'
-          }}>
-            {error}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {!isLoginView && (
@@ -357,6 +354,21 @@ const Login = () => {
                   תקנון האתר ומדיניות הפרטיות
                 </a>
               </label>
+            </div>
+          )}
+
+          {error && (
+            <div style={{ 
+              background: 'rgba(239, 68, 68, 0.1)', 
+              border: '1px solid var(--danger-color)', 
+              color: 'var(--danger-color)', 
+              padding: '1rem', 
+              borderRadius: '8px', 
+              marginTop: '0.5rem',
+              textAlign: 'center',
+              fontWeight: '600'
+            }}>
+              {error}
             </div>
           )}
 
