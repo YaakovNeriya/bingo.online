@@ -17,14 +17,14 @@ async def get_cart(
 ) -> Any:
     return await services.get_or_create_cart(db, current_user.id)
 
-@router.post("/cart", response_model=schemas.CartOut)
+@router.post("/cart", response_model=schemas.ToggleItemResponse)
 async def add_to_cart(
     item_in: schemas.CartItemAdd,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    cart = await services.add_item_to_cart(db, current_user.id, item_in)
-    return cart
+    return await services.add_item_to_cart(db, current_user, item_in)
+
 
 @router.delete("/cart/items/{item_id}", response_model=schemas.CartOut)
 async def remove_cart_item(

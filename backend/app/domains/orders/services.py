@@ -30,7 +30,8 @@ async def _check_deadline_passed(db: AsyncSession, user_id: int):
             raise AppException(status_code=403, detail="חלון ההזמנות לעונה זו נסגר. לא ניתן לשנות את העגלה או לשלוח הזמנה.")
 
 async def get_or_create_cart(db: AsyncSession, user_id: int) -> Cart:
-    result = await db.execute(select(Cart).where(Cart.user_id == user_id).options(selectinload(Cart.items).selectinload(CartItem.color_sku).selectinload(ColorSKU.product_model)))
+    stmt = select(Cart).where(Cart.user_id == user_id).options(selectinload(Cart.items).selectinload(CartItem.color_sku).selectinload(ColorSKU.product_model)).execution_options(populate_existing=True)
+    result = await db.execute(stmt)
     cart = result.scalars().first()
     if not cart:
         cart = Cart(user_id=user_id)
@@ -51,9 +52,10 @@ async def _get_min_cut_length(db: AsyncSession) -> Decimal:
             logger.warning(f"Failed to parse minimum_order_length value '{setting.value}' as Decimal: {e}. Falling back to 1.0.")
     return Decimal('1.0')
 
-async def add_item_to_cart(db: AsyncSession, user_id: int, item_in: schemas.CartItemAdd) -> Cart:
-    await _check_deadline_passed(db, user_id)
-    cart = await get_or_create_cart(db, user_id)
+async def add_item_to_cart(db: AsyncSession, user: User, item_in: schemas.CartItemAdd) -> dict:
+    await _check_deadline_passed(db, user.id)
+    cart = await get_or_create_cart(db, user.id)
+    active_order = await get_active_order(db, user.id)
     
     result = await db.execute(select(ColorSKU).where(ColorSKU.id == item_in.color_sku_id))
     sku = result.scalars().first()
@@ -76,6 +78,8 @@ async def add_item_to_cart(db: AsyncSession, user_id: int, item_in: schemas.Cart
 
     if existing_item:
         existing_item.units += item_in.units
+        await db.commit()
+        cart_item_id = existing_item.id
     else:
         new_item = CartItem(
             cart_id=cart.id,
@@ -84,9 +88,19 @@ async def add_item_to_cart(db: AsyncSession, user_id: int, item_in: schemas.Cart
             units=item_in.units
         )
         db.add(new_item)
-    
-    await db.commit()
-    return await get_or_create_cart(db, user_id)
+        await db.commit()
+        cart_item_id = new_item.id
+        
+    if active_order:
+        return await move_cart_item_to_order(db, user, cart_item_id)
+        
+    updated_cart = await get_or_create_cart(db, user.id)
+    cart_count = sum(item.units for item in updated_cart.items) if updated_cart else 0
+    return {
+        "cart": updated_cart,
+        "active_order": active_order,
+        "cart_count": cart_count
+    }
 
 async def remove_cart_item(db: AsyncSession, user_id: int, item_id: int) -> Cart:
     await _check_deadline_passed(db, user_id)
@@ -230,7 +244,7 @@ async def checkout(db: AsyncSession, user: User, selected_item_ids: Optional[Lis
 async def get_active_order(db: AsyncSession, user_id: int) -> Optional[Order]:
     stmt = select(Order).where(Order.user_id == user_id, Order.status == "order_unpaid").options(
         selectinload(Order.items).selectinload(OrderItem.color_sku).selectinload(ColorSKU.product_model)
-    ).order_by(Order.created_at.desc())
+    ).order_by(Order.created_at.desc()).execution_options(populate_existing=True)
     result = await db.execute(stmt)
     return result.scalars().first()
 
@@ -343,9 +357,6 @@ async def move_cart_item_to_order(db: AsyncSession, user: User, cart_item_id: in
         
     await delete_cache(CACHE_KEY_CATALOG)
     
-    # Clear the session cache to ensure we fetch fresh items from the DB
-    db.expunge_all()
-    
     updated_order = await get_active_order(db, user.id)
     updated_cart = await get_or_create_cart(db, user.id)
     cart_count = sum(item.units for item in updated_cart.items) if updated_cart else 0
@@ -402,9 +413,6 @@ async def move_order_item_to_cart(db: AsyncSession, user: User, order_item_id: i
         new_cart_item_id = new_cart_item.id
         
     await delete_cache(CACHE_KEY_CATALOG)
-    
-    # Clear the session cache to ensure we fetch fresh items from the DB
-    db.expunge_all()
     
     updated_order = await get_active_order(db, user.id)
     updated_cart = await get_or_create_cart(db, user.id)

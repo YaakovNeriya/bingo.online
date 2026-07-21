@@ -16,7 +16,7 @@ const ProductDetailView = () => {
   const { modelId } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const { fetchCartCount } = useContext(CartContext);
+  const { syncCartContext } = useContext(CartContext);
   
   // Hook 1: Product Data
   const {
@@ -44,7 +44,7 @@ const ProductDetailView = () => {
     cartError,
     cartSuccess,
     handleAddToCart
-  } = useCartForm(modelId, selectedSku, minCutLength, fetchCartCount);
+  } = useCartForm(modelId, selectedSku, minCutLength, syncCartContext);
 
   if (loading) return <div className="container" style={{ paddingBottom: '2rem' }}>טוען...</div>;
   if (error) return <div className="container" style={{ paddingBottom: '2rem', color: 'var(--danger-color)' }}>{error}</div>;

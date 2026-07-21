@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import client from '../../../api/client';
 
-export const useCartForm = (modelId, selectedSku, minCutLength, fetchCartCount) => {
+export const useCartForm = (modelId, selectedSku, minCutLength, syncCartContext) => {
   const [lengthMeters, setLengthMeters] = useState(1.0);
   const [units, setUnits] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -63,12 +63,14 @@ export const useCartForm = (modelId, selectedSku, minCutLength, fetchCartCount) 
 
     try {
       setAddingToCart(true);
-      await client.post('/orders/cart', {
+      const res = await client.post('/orders/cart', {
         color_sku_id: selectedSku.id,
         length_meters: parseFloat(Number(lengthMeters).toFixed(1)),
         units: units
       });
-      fetchCartCount();
+      if (syncCartContext) {
+        syncCartContext(res.data.cart, res.data.active_order);
+      }
       setAddingToCart(false);
       const formattedLength = parseFloat(Number(lengthMeters).toFixed(1));
       showSuccess(`התווסף לעגלה: ${units} ${units === 1 ? 'יחידה' : 'יחידות'} של ${formattedLength} מטרים בצבע ${selectedSku.color_name}.`);

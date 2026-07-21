@@ -43,7 +43,7 @@ export const CartItemCard = ({
             <input 
               type="checkbox" 
               checked={!!selectedItems[item.unique_id]} 
-              onChange={() => toggleItemSelection(item.id)} 
+              onChange={toggleItemSelection} 
               disabled={isDeadlinePassed}
             />
             <div className="custom-checkmark"></div>

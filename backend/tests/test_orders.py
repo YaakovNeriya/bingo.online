@@ -285,8 +285,7 @@ async def test_toggle_item_returns_new_cart_id(client: AsyncClient, db_session):
     remove_res = await client.post(f"/api/v1/orders/active/items/{order_item_id}/remove", headers=headers)
     assert remove_res.status_code == 200
     remove_data = remove_res.json()
-    
-    assert remove_data["status"] == "success"
+    assert "cart" in remove_data
     assert "new_cart_item_id" in remove_data
     assert isinstance(remove_data["new_cart_item_id"], int)
     

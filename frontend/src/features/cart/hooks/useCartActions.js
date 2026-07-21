@@ -17,7 +17,7 @@ export const useCartActions = ({
   setItemSelection,
   syncCartState
 }) => {
-  const { fetchCartCount, syncCartContext } = useContext(CartContext);
+  const { syncCartContext } = useContext(CartContext);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [isSendingOrder, setIsSendingOrder] = useState(false);
   const [updatingItems, setUpdatingItems] = useState({});
@@ -34,12 +34,26 @@ export const useCartActions = ({
     setTimeout(() => setError(null), 5000);
   };
 
+  // Fetch cart + order once and sync both local state and context (2 requests instead of 4)
+  const refreshAll = async () => {
+    try {
+      const [cartRes, orderRes] = await Promise.all([
+        client.get('/orders/cart'),
+        client.get('/orders/active').catch(() => ({ data: null }))
+      ]);
+      syncCartState(cartRes.data, orderRes.data);
+      syncCartContext(cartRes.data, orderRes.data);
+    } catch (err) {
+      console.error('Failed to refresh cart state', err);
+    }
+  };
+
   const handleUpdateUnits = async (itemId, newUnits) => {
     if (newUnits < 1) return;
     try {
-      await client.patch(`/orders/cart/items/${itemId}`, { units: newUnits });
-      fetchCart();
-      fetchCartCount();
+      const res = await client.patch(`/orders/cart/items/${itemId}`, { units: newUnits });
+      syncCartState(res.data, activeOrder);
+      syncCartContext(res.data, activeOrder);
     } catch (err) {
       showError(err.response?.data?.detail || 'שגיאה בעדכון כמות');
     }
@@ -48,13 +62,13 @@ export const useCartActions = ({
   const handleSaveEdit = async () => {
     if (editUnits < 1 || editLength < minCutLength) return;
     try {
-      await client.patch(`/orders/cart/items/${editingItem.id}`, { 
+      const res = await client.patch(`/orders/cart/items/${editingItem.id}`, { 
         units: editUnits,
         length_meters: editLength
       });
       setEditingItem(null);
-      fetchCart();
-      fetchCartCount();
+      syncCartState(res.data, activeOrder);
+      syncCartContext(res.data, activeOrder);
     } catch (err) {
       showError(err.response?.data?.detail || 'שגיאה בעדכון פריט');
     }
@@ -64,11 +78,12 @@ export const useCartActions = ({
     try {
       if (item.is_order_item) {
         await client.delete(`/orders/active/items/${item.id}`);
+        await refreshAll();
       } else {
-        await client.delete(`/orders/cart/items/${item.id}`);
+        const res = await client.delete(`/orders/cart/items/${item.id}`);
+        syncCartState(res.data, activeOrder);
+        syncCartContext(res.data, activeOrder);
       }
-      fetchCart();
-      fetchCartCount();
     } catch (err) {
       showError('שגיאה במחיקת הפריט');
     }
@@ -114,8 +129,7 @@ export const useCartActions = ({
         await client.post('/orders/checkout', { selected_item_ids: selectedIds });
         alert("ההזמנה נוצרה, והמלאי נשמר עבורך בהצלחה!");
       }
-      fetchCart();
-      fetchCartCount();
+      await refreshAll();
     } catch (err) {
       showError(err.response?.data?.detail || "שגיאה בביצוע הפעולה");
     } finally {
@@ -124,6 +138,7 @@ export const useCartActions = ({
   };
 
   const handleToggleItem = async (item) => {
+    const originalValue = !!selectedItems[item.unique_id];
     toggleItemSelection(item.unique_id);
     
     if (activeOrder) {
@@ -143,7 +158,7 @@ export const useCartActions = ({
         }
       } catch (err) {
         showError("שגיאה בעדכון הפריט: " + (err.response?.data?.detail || err.message));
-        toggleItemSelection(item.unique_id);
+        setItemSelection(item.unique_id, originalValue);
       } finally {
         setUpdatingItems(prev => ({ ...prev, [item.unique_id]: false }));
       }

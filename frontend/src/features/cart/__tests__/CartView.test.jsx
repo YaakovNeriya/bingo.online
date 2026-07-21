@@ -37,7 +37,7 @@ const mockCart = {
 const renderWithContext = (component, user = null) => {
   return render(
     <AuthContext.Provider value={{ user }}>
-      <CartContext.Provider value={{ fetchCartCount: vi.fn() }}>
+      <CartContext.Provider value={{ fetchCartCount: vi.fn(), syncCartContext: vi.fn() }}>
         <MemoryRouter>
           {component}
         </MemoryRouter>
@@ -81,7 +81,7 @@ describe('CartView Component', () => {
       if (url === '/orders/active') return Promise.resolve({ data: { id: -1, items: [] } });
       return Promise.resolve({ data: {} });
     });
-    client.patch.mockResolvedValueOnce({ data: {} });
+    client.patch.mockResolvedValueOnce({ data: mockCart });
 
     renderWithContext(<CartView />);
 
@@ -111,7 +111,7 @@ describe('CartView Component', () => {
       if (url === '/orders/active') return Promise.resolve({ data: { id: -1, items: [] } });
       return Promise.resolve({ data: {} });
     });
-    client.delete.mockResolvedValueOnce({ data: {} });
+    client.delete.mockResolvedValueOnce({ data: { items: [] } });
 
     renderWithContext(<CartView />);
 
@@ -155,8 +155,14 @@ describe('CartView Component', () => {
       return Promise.resolve({ data: {} });
     });
     
-    // Mock the POST remove call to return the new ID 999
-    client.post.mockResolvedValueOnce({ data: { status: 'success', new_cart_item_id: 999 } });
+    // 2. Mock removing the active order item
+    client.post.mockResolvedValueOnce({ 
+      data: { 
+        cart: { id: 99, items: [{ id: 999, color_sku: { product_model: { base_price: "10.00" } }, length_meters: "1.0", units: 1 }] }, 
+        active_order: { items: [] }, 
+        new_cart_item_id: 999 
+      } 
+    });
 
     renderWithContext(<CartView />);
 

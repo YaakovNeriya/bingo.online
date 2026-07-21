@@ -47,7 +47,7 @@ async def test_register_duplicate_email(client: AsyncClient, db_session):
     # Second registration should fail
     response2 = await client.post("/api/v1/users/register", json=payload)
     assert response2.status_code == 400
-    assert "already exists" in response2.json()["detail"].lower() or "קיים במערכת" in response2.json()["detail"]
+    assert "already exists" in response2.json()["detail"].lower() or "קיימת במערכת" in response2.json()["detail"] or "קיים במערכת" in response2.json()["detail"]
 
 @pytest.mark.asyncio
 async def test_login_cookie(client: AsyncClient, db_session):
