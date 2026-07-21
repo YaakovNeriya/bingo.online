@@ -28,7 +28,7 @@ services:
       - "8001:8000"
     environment:
       - TZ=Asia/Jerusalem
-      - FRONTEND_URL=http://35.231.4.62
+      - FRONTEND_URL=https://bingo-staging.duckdns.org
       - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=${DB_USER:-fabric_user}
@@ -79,9 +79,11 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     environment:
-      - VITE_API_URL=http://localhost:8001
+      - VITE_API_URL=https://bingo-staging.duckdns.org
     volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
       - backend_uploads_staging:/app/uploads
     depends_on:
       - backend

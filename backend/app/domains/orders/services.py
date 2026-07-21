@@ -169,7 +169,7 @@ async def checkout(db: AsyncSession, user: User, selected_item_ids: Optional[Lis
 
     # Start an atomic transaction block for inventory and order creation
     async with db.begin():
-        stmt = select(ColorSKU).options(joinedload(ColorSKU.product_model)).where(ColorSKU.id.in_(sku_ids)).with_for_update()
+        stmt = select(ColorSKU).options(joinedload(ColorSKU.product_model)).where(ColorSKU.id.in_(sku_ids)).with_for_update().execution_options(populate_existing=True)
         result = await db.execute(stmt)
         locked_skus = {sku.id: sku for sku in result.scalars().all()}
         
@@ -268,7 +268,7 @@ async def revert_order_to_cart(db: AsyncSession, user_id: int, order_id: int) ->
     
     async with db.begin():
         if sku_ids:
-            sku_stmt = select(ColorSKU).where(ColorSKU.id.in_(sku_ids)).with_for_update()
+            sku_stmt = select(ColorSKU).where(ColorSKU.id.in_(sku_ids)).with_for_update().execution_options(populate_existing=True)
             sku_result = await db.execute(sku_stmt)
             locked_skus = {sku.id: sku for sku in sku_result.scalars().all()}
         else:
@@ -321,7 +321,7 @@ async def move_cart_item_to_order(db: AsyncSession, user: User, cart_item_id: in
         if not cart_item:
             raise AppException(status_code=404, detail="CartItem not found")
             
-        sku_stmt = select(ColorSKU).options(joinedload(ColorSKU.product_model)).where(ColorSKU.id == cart_item.color_sku_id).with_for_update()
+        sku_stmt = select(ColorSKU).options(joinedload(ColorSKU.product_model)).where(ColorSKU.id == cart_item.color_sku_id).with_for_update().execution_options(populate_existing=True)
         sku_result = await db.execute(sku_stmt)
         sku = sku_result.scalars().first()
         
@@ -337,7 +337,7 @@ async def move_cart_item_to_order(db: AsyncSession, user: User, cart_item_id: in
         price_per_meter = sku.specific_price if sku.specific_price is not None else sku.product_model.base_price
         item_total = price_per_meter * item_total_meters
         
-        order_stmt = select(Order).where(Order.id == order.id).with_for_update()
+        order_stmt = select(Order).where(Order.id == order.id).with_for_update().execution_options(populate_existing=True)
         order_result = await db.execute(order_stmt)
         locked_order = order_result.scalars().first()
         
@@ -388,13 +388,13 @@ async def move_order_item_to_cart(db: AsyncSession, user: User, order_item_id: i
             raise AppException(status_code=400, detail="לא ניתן להחזיר לעגלה פריט שהוסר מהקטלוג")
             
         if order_item.color_sku_id:
-            sku_stmt = select(ColorSKU).where(ColorSKU.id == order_item.color_sku_id).with_for_update()
+            sku_stmt = select(ColorSKU).where(ColorSKU.id == order_item.color_sku_id).with_for_update().execution_options(populate_existing=True)
             sku_result = await db.execute(sku_stmt)
             sku = sku_result.scalars().first()
             if sku:
                 sku.stock_meters += order_item.length_meters * order_item.units
                 
-        order_stmt = select(Order).where(Order.id == order.id).with_for_update()
+        order_stmt = select(Order).where(Order.id == order.id).with_for_update().execution_options(populate_existing=True)
         order_result = await db.execute(order_stmt)
         locked_order = order_result.scalars().first()
         
@@ -441,13 +441,13 @@ async def delete_active_order_item(db: AsyncSession, user: User, order_item_id: 
             raise AppException(status_code=404, detail="OrderItem not found")
             
         if order_item.color_sku_id:
-            sku_stmt = select(ColorSKU).where(ColorSKU.id == order_item.color_sku_id).with_for_update()
+            sku_stmt = select(ColorSKU).where(ColorSKU.id == order_item.color_sku_id).with_for_update().execution_options(populate_existing=True)
             sku_result = await db.execute(sku_stmt)
             sku = sku_result.scalars().first()
             if sku:
                 sku.stock_meters += order_item.length_meters * order_item.units
                 
-        order_stmt = select(Order).where(Order.id == order.id).with_for_update()
+        order_stmt = select(Order).where(Order.id == order.id).with_for_update().execution_options(populate_existing=True)
         order_result = await db.execute(order_stmt)
         locked_order = order_result.scalars().first()
         
