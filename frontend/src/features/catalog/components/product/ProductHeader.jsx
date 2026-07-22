@@ -39,7 +39,7 @@ const ProductHeader = ({ productModel, selectedSku, user }) => {
             <Edit2 size={20} color="#fff" />
           </button>
         )}
-        <ShareWidget url={`${window.location.origin}/api/v1/share/product/${productModel.id}`} title={`בינגו בדים - ${productModel.name}`} />
+        <ShareWidget url={`${window.location.origin}/product/${productModel.id}`} title={`בינגו בדים - ${productModel.name}`} />
       </div>
     </div>
   );
