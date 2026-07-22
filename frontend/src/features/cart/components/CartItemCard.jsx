@@ -114,7 +114,7 @@ export const CartItemCard = ({
           )}
           
           <ShareWidget 
-            url={`${window.location.origin}/product/${item.color_sku.product_model.id}`} 
+            url={`${window.location.origin}/api/v1/share/product/${item.color_sku.product_model.id}`} 
             title={`בינגו בדים - ${item.color_sku.product_model.name}`}
             customClass="shareButton"
           />
