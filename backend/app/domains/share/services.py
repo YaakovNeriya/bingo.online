@@ -26,8 +26,8 @@ async def generate_share_image(model_id: int, original_image_url: str) -> str:
         else:
             return original_image_url
 
-        # Create 1200x1200 square canvas with clean white background for WhatsApp
-        canvas_size = 1200
+        # Create 800x800 square canvas with clean white background for WhatsApp Web
+        canvas_size = 800
         canvas = Image.new("RGB", (canvas_size, canvas_size), (255, 255, 255))
 
         # Center fabric image cleanly on canvas
@@ -36,8 +36,8 @@ async def generate_share_image(model_id: int, original_image_url: str) -> str:
         offset_y = (canvas_size - img.height) // 2
         canvas.paste(img, (offset_x, offset_y))
 
-        # Save as JPEG for WhatsApp compatibility
-        canvas.save(output_path, "JPEG", quality=92)
+        # Save as JPEG with optimized quality for fast loading and WhatsApp Web <300KB limit
+        canvas.save(output_path, "JPEG", quality=85, optimize=True)
         return f"/uploads/{output_filename}"
 
     except Exception as e:

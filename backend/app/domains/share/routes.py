@@ -94,14 +94,19 @@ async def share_product_og(
             <meta property="og:title" content="{title}" />
             <meta property="og:description" content="{description}" />
             <meta property="og:image" content="{full_image_url}" />
+            <meta property="og:image:url" content="{full_image_url}" />
             <meta property="og:image:secure_url" content="{full_image_url}" />
             <meta property="og:image:type" content="image/jpeg" />
-            <meta property="og:image:width" content="1200" />
-            <meta property="og:image:height" content="1200" />
+            <meta property="og:image:width" content="800" />
+            <meta property="og:image:height" content="800" />
             <meta property="og:type" content="product" />
             <meta property="og:url" content="{frontend_url}/product/{model_id}" />
             <meta property="product:price:amount" content="{product.base_price}" />
             <meta property="product:price:currency" content="ILS" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="{title}" />
+            <meta name="twitter:description" content="{description}" />
+            <meta name="twitter:image" content="{full_image_url}" />
         </head>
         <body>
             <p>מעביר אותך למוצר...</p>
