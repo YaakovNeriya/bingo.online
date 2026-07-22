@@ -33,37 +33,19 @@ async def generate_share_image(model_id: int, original_image_url: str) -> str:
 
         # Create 1200x1200 square canvas for WhatsApp/Facebook
         canvas_size = 1200
-        canvas = Image.new("RGBA", (canvas_size, canvas_size), (250, 248, 245, 255)) # Soft off-white background
+        canvas = Image.new("RGBA", (canvas_size, canvas_size), (255, 255, 255, 255)) # Clean white background
 
         # Resize and paste product image
-        # We want the product image to take up most of the center
-        target_img_size = 1000
+        target_img_size = 1100
         img.thumbnail((target_img_size, target_img_size), Image.Resampling.LANCZOS)
         
-        # Center the image on the canvas
+        # Center the fabric image cleanly on the canvas
         offset_x = (canvas_size - img.width) // 2
         offset_y = (canvas_size - img.height) // 2
         canvas.paste(img, (offset_x, offset_y), img if img.mode == 'RGBA' else None)
 
-        # Draw elegant frame (Removed per user request)
-        # We just leave the canvas as is with the fabric in the center
-        draw = ImageDraw.Draw(canvas)
-
-        # Paste the logo
-        if LOGO_PATH.exists():
-            logo = Image.open(LOGO_PATH).convert("RGBA")
-            # Make logo a reasonable size (e.g., max width 300)
-            logo.thumbnail((400, 200), Image.Resampling.LANCZOS)
-            
-            # Position logo at the top center
-            logo_x = (canvas_size - logo.width) // 2
-            logo_y = 50
-            
-            # Paste the logo with transparency mask
-            canvas.paste(logo, (logo_x, logo_y), logo)
-
-        # Convert back to RGB to save as WebP without alpha if needed, but webp supports alpha
-        canvas.save(output_path, "WEBP", quality=90)
+        # Save as WebP
+        canvas.save(output_path, "WEBP", quality=92)
         
         return f"/uploads/{output_filename}"
         
