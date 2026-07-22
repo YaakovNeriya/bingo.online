@@ -116,7 +116,7 @@ jobs:
                 -d ${PROD_DOMAIN} \
                 --non-interactive \
                 --agree-tos \
-                --register-unsafely-without-email || echo "Warning: Certbot initial setup failed!"
+                --register-unsafely-without-email || { echo "❌ ERROR: Certbot initial setup failed!"; exit 1; }
             fi
 
             # Ensure /etc/letsencrypt/live/active points to the production certificate directory
