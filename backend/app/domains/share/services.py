@@ -1,18 +1,21 @@
-from PIL import Image, ImageDraw
+from PIL import Image, ImageOps
 from pathlib import Path
 
 # Paths inside docker container
 UPLOADS_DIR = Path("/app/uploads")
 LOGO_PATH = Path("/app/app/bingo_logo.webp")
 
-async def generate_share_image(model_id: int, original_image_url: str) -> str:
+async def generate_share_image(model_id: int, original_image_url: str, is_square: bool = False) -> str:
     """
-    Takes the original image and returns a URL to a watermarked, framed image.
+    Takes the original fabric image and crops/resizes it to fill:
+    - 1200x1200 square for WhatsApp (is_square=True)
+    - 1200x630 rectangle for Facebook/Twitter/Others (is_square=False)
     """
-    output_filename = f"share_{model_id}.webp"
+    aspect_tag = "sq" if is_square else "rect"
+    output_filename = f"share_{model_id}_{aspect_tag}.webp"
     output_path = UPLOADS_DIR / output_filename
     
-    # If it already exists, return the cached one (cache invalidation will be handled later)
+    # If it already exists, return the cached one
     if output_path.exists():
         return f"/uploads/{output_filename}"
 
@@ -25,24 +28,17 @@ async def generate_share_image(model_id: int, original_image_url: str) -> str:
                 return original_image_url # Fallback if local file missing
             img = Image.open(input_path).convert("RGBA")
         elif original_image_url.startswith("http"):
-            # If it's an external URL (which shouldn't happen for our fabrics),
-            # just skip watermarking and return the original to avoid hanging
             return original_image_url
         else:
             return original_image_url # Unsupported format
 
-        # Create 1200x1200 square canvas for WhatsApp/Facebook
-        canvas_size = 1200
-        canvas = Image.new("RGBA", (canvas_size, canvas_size), (255, 255, 255, 255)) # Clean white background
+        # Create aspect canvas
+        if is_square:
+            target_size = (1200, 1200) # WhatsApp square
+        else:
+            target_size = (1200, 630)  # Facebook rectangle
 
-        # Resize and paste product image
-        target_img_size = 1100
-        img.thumbnail((target_img_size, target_img_size), Image.Resampling.LANCZOS)
-        
-        # Center the fabric image cleanly on the canvas
-        offset_x = (canvas_size - img.width) // 2
-        offset_y = (canvas_size - img.height) // 2
-        canvas.paste(img, (offset_x, offset_y), img if img.mode == 'RGBA' else None)
+        canvas = ImageOps.fit(img, target_size, Image.Resampling.LANCZOS, centering=(0.5, 0.5))
 
         # Save as WebP
         canvas.save(output_path, "WEBP", quality=92)

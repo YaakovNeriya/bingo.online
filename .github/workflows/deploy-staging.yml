@@ -197,11 +197,11 @@ jobs:
             sudo docker compose -f docker-compose.staging.yml up -d
             
             # Wait a few seconds for FastAPI to start
-            sleep 5
+            sleep 3
             
             # Option 5: Health Check (Halt pipeline on failure)
             echo "Running health check on http://localhost:8001/api/v1/health..."
-            if ! curl -s -f http://localhost:8001/api/v1/health > /dev/null; then
+            if ! curl -s -f --retry 5 --retry-delay 3 http://localhost:8001/api/v1/health > /dev/null; then
               echo "ERROR: Health check failed! The backend API is down. Check logs!"
               exit 1
             fi

@@ -28,18 +28,21 @@ async def share_product_og(
     model_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    cache_key = f"og_html_{model_id}"
+    user_agent = request.headers.get("user-agent", "").lower()
+    is_whatsapp = "whatsapp" in user_agent
+    platform_key = "wa" if is_whatsapp else "fb"
+    cache_key = f"og_html_{model_id}_{platform_key}"
     
     # 1. Check Redis Cache
     try:
         cached_html = await redis_client.get(cache_key)
         if cached_html:
-            og_logger.info(f"Cache HIT for model_id {model_id}")
+            og_logger.info(f"Cache HIT for model_id {model_id} ({platform_key})")
             return HTMLResponse(content=cached_html)
     except Exception as e:
         og_logger.error(f"Redis cache read error for model_id {model_id}: {e}")
 
-    og_logger.info(f"Generating OG Tags for model_id {model_id} (Cache MISS)")
+    og_logger.info(f"Generating OG Tags for model_id {model_id} ({platform_key}) (Cache MISS)")
 
     try:
         # Fetch the product model with its colors
@@ -70,9 +73,9 @@ async def share_product_og(
         if not image_url:
             image_url = "/logo.png" # Assuming there's a default logo
         else:
-            # Generate the elegant framed watermark image
+            # Generate aspect-ratio tailored image
             from app.domains.share.services import generate_share_image
-            image_url = await generate_share_image(model_id, image_url)
+            image_url = await generate_share_image(model_id, image_url, is_square=is_whatsapp)
 
         # Determine full image URL (WhatsApp needs absolute URLs)
         frontend_url = settings.FRONTEND_URL.rstrip("/")
@@ -81,9 +84,31 @@ async def share_product_og(
         else:
             full_image_url = image_url
 
-        title = f"בינגו בדים - {product.name}"
-        description = f"בד {product.product_type.name} איכותי. לחצו כאן לפרטים והזמנה."
+        # Fetch global deadline setting if available
+        deadline_text = ""
+        try:
+            from app.domains.admin.models import SiteSetting
+            stmt_deadline = select(SiteSetting).where(SiteSetting.key == "global_deadline")
+            setting_res = (await db.execute(stmt_deadline)).scalar_one_or_none()
+            if setting_res and setting_res.value:
+                from datetime import datetime
+                try:
+                    dt = datetime.fromisoformat(setting_res.value)
+                    deadline_text = dt.strftime("%d/%m/%Y")
+                except Exception:
+                    deadline_text = str(setting_res.value)
+        except Exception:
+            pass
+
+        title = f"הקולקציה של בינגו בדים - מפות / בדים לפי מטר ✨"
+        if deadline_text:
+            description = f"{product.product_type.name} ({product.name}) - הזמנות עד {deadline_text} 📅 "
+        else:
+            description = f"{product.product_type.name} ({product.name}) - לחצו לצפייה במוצר והזמנה 🛒"
         
+        img_w = "1200"
+        img_h = "1200" if is_whatsapp else "630"
+
         # Generate the minimal HTML with OG Tags
         html_content = f"""
         <!DOCTYPE html>
@@ -94,6 +119,10 @@ async def share_product_og(
             <meta property="og:title" content="{title}" />
             <meta property="og:description" content="{description}" />
             <meta property="og:image" content="{full_image_url}" />
+            <meta property="og:image:width" content="{img_w}" />
+            <meta property="og:image:height" content="{img_h}" />
+            <meta property="og:image:type" content="image/webp" />
+            <meta name="twitter:card" content="summary_large_image" />
             <meta property="og:type" content="product" />
             <meta property="og:url" content="{frontend_url}/product/{model_id}" />
             <meta property="product:price:amount" content="{product.base_price}" />
