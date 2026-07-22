@@ -9,4 +9,4 @@ try:
     response = model.generate_content(["Describe the UI design of the search bar in this image in detail. What shape is it? Where is the icon? What is the layout?", img])
     print(response.text)
 except Exception as e:
-    print("Error:", e)
+    print("Error:", e) 
