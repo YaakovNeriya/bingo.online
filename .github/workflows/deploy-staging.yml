@@ -102,6 +102,41 @@ jobs:
             # Create directory if it doesn't exist
             mkdir -p $DEPLOY_PATH
             cd $DEPLOY_PATH
+
+            # Update DuckDNS IP automatically if token is provided
+            DUCKDNS_TOKEN="${{ secrets.DUCKDNS_TOKEN }}"
+            if [ -n "$DUCKDNS_TOKEN" ]; then
+              echo "Updating DuckDNS IP for bingo-staging.duckdns.org..."
+              curl -s "https://www.duckdns.org/update?domains=bingo-staging&token=${DUCKDNS_TOKEN}&ip=" || true
+            fi
+
+            # Ensure Certbot webroot folder exists
+            sudo mkdir -p /var/www/certbot
+
+            # Auto-issue SSL certificate via Certbot if missing on a new server
+            if [ ! -f /etc/letsencrypt/live/bingo-staging.duckdns.org/fullchain.pem ]; then
+              echo "🔑 New server detected! Installing Certbot and issuing SSL certificate..."
+              if ! command -v certbot &> /dev/null; then
+                sudo apt-get update && sudo apt-get install -y certbot
+              fi
+              # Stop existing containers if any to free up port 80 for standalone verification
+              sudo docker compose -f docker-compose.staging.yml down 2>/dev/null || true
+              
+              sudo certbot certonly --standalone \
+                -d bingo-staging.duckdns.org \
+                --non-interactive \
+                --agree-tos \
+                --register-unsafely-without-email || echo "Warning: Certbot initial setup failed!"
+            fi
+
+            # Ensure /etc/letsencrypt/live/active points to this environment's certificate directory
+            if [ -d /etc/letsencrypt/live/bingo-staging.duckdns.org ]; then
+              sudo ln -sfn /etc/letsencrypt/live/bingo-staging.duckdns.org /etc/letsencrypt/live/active
+            fi
+
+            # Setup cron job to check and renew certificate automatically every 2 days at 03:00 AM
+            echo "0 3 */2 * * root certbot renew --webroot -w /var/www/certbot --deploy-hook 'docker exec fabric_staging_frontend nginx -s reload' --quiet" | sudo tee /etc/cron.d/certbot-renew-staging > /dev/null
+            sudo chmod 644 /etc/cron.d/certbot-renew-staging
             
             # Plant the .env file with secrets from GitHub
             cat <<EOF > .env

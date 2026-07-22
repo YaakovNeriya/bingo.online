@@ -108,7 +108,10 @@ services:
     logging: *default-logging
     ports:
       - "80:80"
+      - "443:443"
     volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
       - backend_uploads:/app/uploads
     depends_on:
       - backend

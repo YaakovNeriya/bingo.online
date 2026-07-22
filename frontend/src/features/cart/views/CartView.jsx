@@ -6,6 +6,7 @@ import { CartHeader } from '../components/CartHeader';
 import { CartItemCard } from '../components/CartItemCard';
 import { CartEditModal } from '../components/CartEditModal';
 import { CreditCard } from 'lucide-react';
+import Toast from '../../../components/ui/Toast';
 
 const CartView = () => {
   const { user } = useContext(AuthContext);
@@ -78,27 +79,7 @@ const CartView = () => {
         isDeadlinePassed={isDeadlinePassed}
       />
 
-      {error && (
-        <div style={{
-          position: 'fixed',
-          top: '2rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'rgba(254, 226, 226, 0.95)',
-          border: '1px solid #fca5a5',
-          color: '#991b1b',
-          padding: '1rem 2rem',
-          borderRadius: '12px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-          zIndex: 9999,
-          textAlign: 'center',
-          fontWeight: '600',
-          backdropFilter: 'blur(4px)',
-          animation: 'fadeInDown 0.3s ease-out'
-        }}>
-          {error}
-        </div>
-      )}
+      <Toast type="error" message={error} />
       
       <div className="glass-panel cart-panel">
         {displayItems.length === 0 ? (

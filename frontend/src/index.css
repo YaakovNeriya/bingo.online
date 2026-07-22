@@ -1663,3 +1663,47 @@ h3 {
   }
 }
 
+/* Toast Notification Component */
+.toast-banner {
+  position: fixed;
+  top: 105px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffffff;
+  padding: 0.8rem 2rem;
+  border-radius: 50px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1rem;
+  font-weight: 700;
+  /* backdrop-filter: blur(2px); */
+  /* -webkit-backdrop-filter: blur(92px); */
+  animation: fadeInDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 92vw;
+  width: max-content;
+  /* border: 1px solid rgba(255, 255, 255, 0.25); */
+  direction: rtl;
+}
+
+.toast-banner.toast-success {
+  background:  #10b981 ;
+  /* box-shadow: 0 12px 35px -5px rgba(16, 185, 129, 0.45), 0 4px 15px rgba(0, 0, 0, 0.1); */
+}
+
+.toast-banner.toast-error {
+  background: #ef4444 ;
+  /* box-shadow: 0 12px 35px -5px rgba(239, 68, 68, 0.45), 0 4px 15px rgba(0, 0, 0, 0.1); */
+}
+
+.toast-banner-text {
+  white-space: pre-line;
+  line-height: 1.45;
+}
+
+.toast-banner-icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+

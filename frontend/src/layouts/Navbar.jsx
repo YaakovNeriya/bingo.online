@@ -434,6 +434,7 @@ const Navbar = () => {
               >
                 <svg 
                   viewBox="0 0 100 100" 
+                  dir="ltr"
                   style={{ 
                     position: 'absolute', 
                     top: '-15px', 
@@ -441,11 +442,12 @@ const Navbar = () => {
                     width: '100px', 
                     height: '100px', 
                     pointerEvents: 'none',
-                    overflow: 'visible'
+                    overflow: 'visible',
+                    direction: 'ltr'
                   }}
                 >
                   <path id="loginArcTop" d="M 12,50 A 38,38 0 0,1 88,50" fill="none" />
-                  <text style={{ fontSize: '15px', fontWeight: '800', fill: '#172f5e', letterSpacing: '0.5px' }}>
+                  <text style={{ fontSize: '15px', fontWeight: '800', fill: '#172f5e', letterSpacing: '0.5px', direction: 'ltr' }}>
                     <textPath href="#loginArcTop" startOffset="50%" textAnchor="middle">
                       התחבר
                     </textPath>
@@ -478,6 +480,7 @@ const Navbar = () => {
               >
                 <svg 
                   viewBox="0 0 100 100" 
+                  dir="ltr"
                   style={{ 
                     position: 'absolute', 
                     top: '-15px', 
@@ -485,11 +488,12 @@ const Navbar = () => {
                     width: '100px', 
                     height: '100px', 
                     pointerEvents: 'none',
-                    overflow: 'visible'
+                    overflow: 'visible',
+                    direction: 'ltr'
                   }}
                 >
                   <path id="contactArcTop" d="M 12,50 A 38,38 0 0,1 88,50" fill="none" />
-                  <text style={{ fontSize: '15px', fontWeight: '800', fill: '#128C7E', letterSpacing: '0.5px' }}>
+                  <text style={{ fontSize: '15px', fontWeight: '800', fill: '#128C7E', letterSpacing: '0.5px', direction: 'ltr' }}>
                     <textPath href="#contactArcTop" startOffset="50%" textAnchor="middle">
                       צור קשר
                     </textPath>

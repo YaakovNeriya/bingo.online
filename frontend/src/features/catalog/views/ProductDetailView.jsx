@@ -11,6 +11,7 @@ import ColorSelector from '../components/product/ColorSelector';
 import ProductImageGallery from '../components/product/ProductImageGallery';
 import AddToCartPanel from '../components/product/AddToCartPanel';
 import RelatedProducts from '../components/product/RelatedProducts';
+import Toast from '../../../components/ui/Toast';
 
 const ProductDetailView = () => {
   const { modelId } = useParams();
@@ -63,49 +64,8 @@ const ProductDetailView = () => {
         <span style={{ color: 'var(--text-color)' }}>{productModel.name}</span>
       </div>
 
-      {cartError && (
-        <div style={{
-          position: 'fixed',
-          top: '2rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'rgba(254, 226, 226, 0.95)',
-          border: '1px solid #fca5a5',
-          color: '#991b1b',
-          padding: '1rem 2rem',
-          borderRadius: '12px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-          zIndex: 9999,
-          textAlign: 'center',
-          fontWeight: '600',
-          backdropFilter: 'blur(4px)',
-          animation: 'fadeInDown 0.3s ease-out'
-        }}>
-          {cartError}
-        </div>
-      )}
-
-      {cartSuccess && (
-        <div style={{
-          position: 'fixed',
-          top: '2rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'rgba(220, 252, 231, 0.95)',
-          border: '1px solid #86efac',
-          color: '#166534',
-          padding: '1rem 2rem',
-          borderRadius: '12px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-          zIndex: 9999,
-          textAlign: 'center',
-          fontWeight: '600',
-          backdropFilter: 'blur(4px)',
-          animation: 'fadeInDown 0.3s ease-out'
-        }}>
-          {cartSuccess}
-        </div>
-      )}
+      <Toast type="error" message={cartError} />
+      <Toast type="success" message={cartSuccess} />
 
       {/* Main Product Section */}
       <div className="glass-panel product-desktop-grid">

@@ -73,7 +73,7 @@ export const useCartForm = (modelId, selectedSku, minCutLength, syncCartContext)
       }
       setAddingToCart(false);
       const formattedLength = parseFloat(Number(lengthMeters).toFixed(1));
-      showSuccess(`התווסף לעגלה: ${units} ${units === 1 ? 'יחידה' : 'יחידות'} של ${formattedLength} מטרים בצבע ${selectedSku.color_name}.`);
+      showSuccess(`התווסף לעגלה:\n${units} ${units === 1 ? 'יחידה' : 'יחידות'} של ${formattedLength} מטרים בצבע ${selectedSku.color_name}.`);
     } catch (error) {
       const errDetail = error.response?.data?.detail;
       showError(
