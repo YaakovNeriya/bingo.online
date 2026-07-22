@@ -63,25 +63,32 @@ export default function SocialShareCard({ url, title }) {
           <div className="bg" aria-hidden="true"></div>
         </div>
         
-        {socials.map((social) => (
-          <a
-            key={social.name}
-            href={social.href}
-            onClick={social.onClick}
-            target={social.onClick ? undefined : "_blank"}
-            rel="noopener noreferrer"
-            aria-label={social.name}
-            title={social.name}
-            className="social-icon"
-            style={{ backgroundColor: social.color }}
-          >
-            {social.name === "העתק קישור" && copied ? (
-              <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>הועתק!</span>
-            ) : (
-              <SocialIcon social={social} />
-            )}
-          </a>
-        ))}
+        <div className="social-card-title">
+         מצאת את הבד שלך?
+         <br></br> שלחי לחברה שמבינה עניין..
+        </div>
+
+        <div className="social-icons-row">
+          {socials.map((social) => (
+            <a
+              key={social.name}
+              href={social.href}
+              onClick={social.onClick}
+              target={social.onClick ? undefined : "_blank"}
+              rel="noopener noreferrer"
+              aria-label={social.name}
+              title={social.name}
+              className="social-icon"
+              style={{ backgroundColor: social.color }}
+            >
+              {social.name === "העתק קישור" && copied ? (
+                <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>הועתק!</span>
+              ) : (
+                <SocialIcon social={social} />
+              )}
+            </a>
+          ))}
+        </div>
       </div>
 
       <style>{`
@@ -99,21 +106,39 @@ export default function SocialShareCard({ url, title }) {
           position: relative;
           width: 100%;
           height: fit-content;
-          background-color: rgba(255, 255, 255, 0.35);
+          background-color: rgba(255, 255, 255, 0.4);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          flex-wrap: nowrap;
-          overflow-x: auto;
-          scrollbar-width: none; /* Firefox */
-          padding: 10px;
-          gap: 15px;
+          padding: 14px 12px;
+          gap: 12px;
           border-radius: 16px;
-          border: 1px solid rgba(187, 183, 183, 0.5);
-          box-shadow: 0 4px 15px rgba(8, 6, 6, 0.05);
+          border: 1px solid rgba(211, 210, 210);
           box-sizing: border-box;
+        }
+
+        .social-card-title {
+          position: relative;
+          z-index: 1;
+          font-family: 'Gveret Levin', cursive;
+          font-size: 1.2rem;
+          font-weight: 500;
+          color: #103063;
+          text-align: center;
+          letter-spacing: 1px;
+        }
+
+        .social-icons-row {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 15px;
+          width: 100%;
         }
 
         .bg-container {
