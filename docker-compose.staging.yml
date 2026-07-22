@@ -84,6 +84,7 @@ services:
       - VITE_API_URL=https://bingo-staging.duckdns.org
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
       - backend_uploads_staging:/app/uploads
     depends_on:
       - backend
