@@ -10,6 +10,8 @@ class ProductModelCreate(BaseModel):
     product_type_id: int
     base_price: Decimal
     fabric_height: Decimal
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
 
 from typing import List, Any
 
@@ -29,6 +31,8 @@ class ProductModelUpdate(BaseModel):
     base_price: Optional[Decimal] = None
     fabric_height: Optional[Decimal] = None
     is_active: Optional[bool] = None
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
 
 class ColorSKUUpdate(BaseModel):
     sku: Optional[str] = None

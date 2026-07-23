@@ -41,7 +41,7 @@ async def generate_share_image(model_id: int, original_image_url: str, is_square
         canvas = ImageOps.fit(img, target_size, Image.Resampling.LANCZOS, centering=(0.5, 0.5))
 
         # Save as WebP
-        canvas.save(output_path, "WEBP", quality=92)
+        canvas.save(output_path, "WEBP", quality=80)
         
         return f"/uploads/{output_filename}"
         

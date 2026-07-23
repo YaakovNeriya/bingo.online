@@ -31,13 +31,15 @@ const ProductManagement = ({ editSkuId }) => {
 
   // Forms state
   const [typeForm, setTypeForm] = useState({ id: null, name: '' });
-  const [modelForm, setModelForm] = useState({ id: null, name: '', product_type_id: '', base_price: '', fabric_height: '' });
+  const [modelForm, setModelForm] = useState({ id: null, name: '', product_type_id: '', base_price: '', fabric_height: '', image_url: '', video_url: '' });
   const [skuForm, setSkuForm] = useState({ id: null, sku: '', color_name: '', product_model_id: '', stock_meters: '', specific_price: '', image_urls: [] });
   const [isWistiaModalOpen, setIsWistiaModalOpen] = useState(false);
 
   const fileInputRef = useRef(null);
+  const modelFileInputRef = useRef(null);
   const processedEditId = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [modelUploading, setModelUploading] = useState(false);
   const [reorderingId, setReorderingId] = useState(null);
 
   useEffect(() => {
@@ -71,17 +73,19 @@ const ProductManagement = ({ editSkuId }) => {
   };
 
   const openAddModelModal = (typeId = '') => {
-    setModelForm({ id: null, name: '', product_type_id: typeId || '', base_price: '', fabric_height: '1.5' });
+    setModelForm({ id: null, name: '', product_type_id: typeId || '', base_price: '', fabric_height: '1.5', image_url: '', video_url: '' });
     setModalState({ isOpen: true, type: 'model', mode: 'add' });
   };
 
-  const openEditModelModal = (model) => {
+  const openEditModelModal = (model, typeId = '') => {
     setModelForm({ 
       id: model.id, 
       name: model.name, 
-      product_type_id: model.product_type_id, 
+      product_type_id: model.product_type_id || typeId || '', 
       base_price: model.base_price, 
-      fabric_height: model.fabric_height 
+      fabric_height: model.fabric_height,
+      image_url: model.image_url || '',
+      video_url: model.video_url || ''
     });
     setModalState({ isOpen: true, type: 'model', mode: 'edit' });
   };
@@ -192,14 +196,16 @@ const ProductManagement = ({ editSkuId }) => {
         name: modelForm.name,
         product_type_id: parseInt(modelForm.product_type_id),
         base_price: parseFloat(modelForm.base_price),
-        fabric_height: modelForm.fabric_height ? parseFloat(modelForm.fabric_height) : 1.5
+        fabric_height: modelForm.fabric_height ? parseFloat(modelForm.fabric_height) : 1.5,
+        image_url: modelForm.image_url || null,
+        video_url: modelForm.video_url || null
       };
       if (modelForm.id) {
         await client.put(`/admin/product-models/${modelForm.id}`, payload);
       } else {
         await client.post('/admin/product-models', payload);
       }
-      setModelForm({ id: null, name: '', product_type_id: '', base_price: '', fabric_height: '' });
+      setModelForm({ id: null, name: '', product_type_id: '', base_price: '', fabric_height: '', image_url: '', video_url: '' });
       closeModal();
       fetchCatalog();
     } catch (err) { alert(err.response?.data?.detail || 'שגיאה בשמירה'); }
@@ -211,6 +217,29 @@ const ProductManagement = ({ editSkuId }) => {
       await client.delete(`/admin/product-models/${id}`);
       fetchCatalog();
     } catch (err) { alert('שגיאה במחיקה'); }
+  };
+
+  const handleModelImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setModelUploading(true);
+    try {
+      const { compressImageClientSide } = await import('../../../utils/imageCompression');
+      const compressedFile = await compressImageClientSide(file);
+      
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      const res = await client.post('/admin/upload-image?aspect_ratio=1:1', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setModelForm(prev => ({ ...prev, image_url: res.data.image_url }));
+    } catch (err) {
+      alert('שגיאה בהעלאת התמונה');
+    } finally {
+      setModelUploading(false);
+      if (modelFileInputRef.current) modelFileInputRef.current.value = '';
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -241,7 +270,7 @@ const ProductManagement = ({ editSkuId }) => {
   };
 
   const handleAddWistiaVideo = (url) => {
-    setSkuForm(prev => ({ ...prev, image_urls: [...prev.image_urls, url] }));
+    setModelForm(prev => ({ ...prev, video_url: url }));
   };
 
   const handleSkuSubmit = async (e) => {
@@ -422,7 +451,7 @@ const ProductManagement = ({ editSkuId }) => {
                             >
                               <Plus size={16} />
                             </button>
-                            <button className="admin-icon-btn" onClick={() => openEditModelModal(model)} style={{ color: '#3b82f6' }} title="ערוך דגם"><Edit2 size={18} /></button>
+                            <button className="admin-icon-btn" onClick={() => openEditModelModal(model, type.id)} style={{ color: '#3b82f6' }} title="ערוך דגם"><Edit2 size={18} /></button>
                             <button className="admin-icon-btn" onClick={() => handleDeleteModel(model.id, model.name)} style={{ color: 'var(--danger-color)' }} title="מחק דגם"><Trash2 size={18} /></button>
                           </div>
                         </div>
@@ -573,6 +602,48 @@ const ProductManagement = ({ editSkuId }) => {
                   </div>
                 </div>
 
+                {/* Model Media (1 Image & 1 Video) */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>מדית הדגם (תמונה אחת בלבד + סרטון אחד בלבד)</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input type="file" accept="image/*" style={{ display: 'none' }} ref={modelFileInputRef} onChange={handleModelImageUpload} />
+                    <button type="button" className="btn btn-primary" onClick={() => modelFileInputRef.current.click()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Upload size={16} style={{ marginLeft: '0.5rem' }} /> {modelForm.image_url ? 'החלף תמונת דגם' : 'העלה תמונת דגם'}
+                    </button>
+                    <button type="button" className="btn" onClick={() => setIsWistiaModalOpen(true)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#6366f1', color: 'white', padding: '0.75rem' }}>
+                      <Film size={16} style={{ marginLeft: '0.5rem' }} /> {modelForm.video_url ? 'החלף סרטון דגם' : 'הוסף סרטון דגם'}
+                    </button>
+                    {modelUploading && <span style={{ fontSize: '0.8rem' }}>מעלה...</span>}
+                  </div>
+
+                  {/* Previews for Model Image & Video */}
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                    {modelForm.image_url && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-light)' }}>תמונת הדגם:</span>
+                        <div style={{ position: 'relative', width: '80px', height: '80px', border: '1px solid var(--glass-border)', borderRadius: '8px', overflow: 'hidden' }}>
+                          <SmartImage src={modelForm.image_url} alt="model-preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button type="button" onClick={() => setModelForm(prev => ({ ...prev, image_url: '' }))} style={{ position: 'absolute', top: '2px', left: '2px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {modelForm.video_url && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-light)' }}>סרטון הדגם:</span>
+                        <div style={{ position: 'relative', padding: '0.5rem 0.75rem', background: '#e0e7ff', border: '1px solid #6366f1', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <Film size={18} color="#6366f1" />
+                          <span style={{ fontSize: '0.85rem', color: '#3730a3', fontWeight: 'bold' }}>סרטון מחובר</span>
+                          <button type="button" onClick={() => setModelForm(prev => ({ ...prev, video_url: '' }))} style={{ background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '0.25rem' }}>
+                            <X size={10} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                   <button type="button" className="btn" onClick={closeModal} style={{ background: '#e2e8f0', color: '#475569' }}>ביטול</button>
                   <button type="submit" className="btn btn-primary">{modalState.mode === 'edit' ? 'שמור שינויים' : 'צור דגם'}</button>
@@ -612,17 +683,12 @@ const ProductManagement = ({ editSkuId }) => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>מדיה</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>תמונות הצבע</label>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <input type="file" multiple accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={handleImageUpload} />
-                    <button type="button" className="btn btn-primary" onClick={() => fileInputRef.current.click()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Upload size={16} style={{ marginLeft: '0.5rem' }} /> העלה תמונות <br /> (1:1)
+                    <button type="button" className="btn btn-primary" onClick={() => fileInputRef.current.click()} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Upload size={16} style={{ marginLeft: '0.5rem' }} /> העלה תמונות צבע (1:1)
                     </button>
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                      <button type="button" className="btn" onClick={() => setIsWistiaModalOpen(true)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#6366f1', color: 'white', padding: '0.75rem' }}>
-                        <Film size={16} style={{ marginLeft: '0.5rem' }} /> הוסף סרטון
-                      </button>
-                    </div>
                     {uploading && <span style={{ fontSize: '0.8rem' }}>מעלה...</span>}
                   </div>
                 </div>

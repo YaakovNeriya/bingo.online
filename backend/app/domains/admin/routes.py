@@ -250,7 +250,7 @@ def process_image_sync(image_data: bytes, aspect_ratio: Optional[str], upload_di
     #    (The original only checked KB, so a well-compressed but huge-resolution
     #    image, e.g. a flat-background photo, could slip through at full size.)
     if size_kb < SMALL_FILE_THRESHOLD_KB and max(img.size) <= MAX_EDGE:
-        quality = 90  # light touch, already small
+        quality = 85  # light touch, already small
     else:
         img.thumbnail((MAX_EDGE, MAX_EDGE), Image.Resampling.LANCZOS)
         quality = 80

@@ -19,6 +19,8 @@ class ProductModel(Base):
     fabric_height = Column(Numeric(10, 2), default=1.5, nullable=False)
     is_active = Column(Boolean, default=True)
     display_order = Column(Integer, default=0, index=True)
+    image_url = Column(String(500), nullable=True)
+    video_url = Column(String(500), nullable=True)
 
     product_type = relationship("ProductType", back_populates="product_models")
     color_skus = relationship("ColorSKU", back_populates="product_model", cascade="all, delete-orphan", passive_deletes=True, order_by="ColorSKU.display_order.asc(), ColorSKU.id.asc()")

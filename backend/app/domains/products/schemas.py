@@ -18,8 +18,11 @@ class ColorSKUOut(BaseModel):
 class ProductModelOut(BaseModel):
     id: int
     name: str
+    product_type_id: Optional[int] = None
     base_price: Decimal
     fabric_height: Decimal
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
     color_skus: List[ColorSKUOut] = []
 
     class Config:

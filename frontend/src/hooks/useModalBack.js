@@ -40,7 +40,7 @@ export function useModalBack(isOpen, onClose, modalId = 'modal') {
         // Delay history back to prevent popping if we are immediately remounted (Strict Mode)
         // or if another state was already pushed over it.
         setTimeout(() => {
-          if (window.history.state?.stateKey === stateKey) {
+          if (typeof window !== 'undefined' && window.history?.state?.stateKey === stateKey) {
             window.history.back();
           }
         }, 50);

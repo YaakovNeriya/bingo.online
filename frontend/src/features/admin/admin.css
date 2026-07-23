@@ -114,3 +114,90 @@
   align-items: center;
   flex-wrap: wrap;
 }
+
+/* Admin Orders & Mobile Optimizations */
+.admin-order-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-order-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-hamburger-btn {
+    display: flex !important;
+  }
+
+  .hide-on-mobile-menu {
+    display: none !important;
+  }
+
+  .admin-order-main {
+    align-items: flex-start !important;
+  }
+
+  .admin-order-left {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  .region-card-outer {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem) !important;
+  }
+  
+  .customer-row-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    padding: 1rem !important;
+    gap: 1rem;
+  }
+  
+  .customer-row-actions {
+    width: 100%;
+    justify-content: space-between !important;
+    flex-direction: row-reverse;
+  }
+  
+  .customer-row-details {
+    width: 100%;
+  }
+  
+  .customer-row-title {
+    align-items: flex-start !important;
+  }
+  
+  .customer-row-contact {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.25rem !important;
+  }
+  
+  .customer-row-contact .separator {
+    display: none !important;
+  }
+
+  .product-model-details,
+  .product-sku-details {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.25rem !important;
+  }
+}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SmartImage from '../../../components/ui/SmartImage';
 import ImageLightbox from '../../../components/ui/ImageLightbox';
+import { MoveVertical, Play } from 'lucide-react';
 
 const ProductCard = ({ productModel, index = 999 }) => {
   const navigate = useNavigate();
@@ -23,29 +24,84 @@ const ProductCard = ({ productModel, index = 999 }) => {
         onClick={() => navigate(`/product/${productModel.id}?sku=${activeSku.id}`)}
       >
         <div className="mobile-edge-image">
-          {activeImage ? (
-            <SmartImage
-              src={activeImage}
-              alt={productModel.name}
-              className="product-card-img-full"
-              eager={index < 6}
-              onPlayClick={() => setLightboxOpen(true)}
-            />
-          ) : (
-            <div className="product-card-no-img">אין תמונה</div>
+          {/* Card Badges (Over Image) */}
+          {productModel.video_url && (
+            <div className="card-badges-container">
+              <div className="card-badge video-badge">
+                <Play size={14} fill="currentColor" style={{ marginLeft: '2px' }} />
+              </div>
+            </div>
           )}
+
+          {/* Mobile View Model Image */}
+          <div className="mobile-only-img-wrapper">
+            {productModel.image_url ? (
+              <SmartImage
+                src={productModel.image_url}
+                alt={productModel.name}
+                className="product-card-img-full"
+                eager={index < 2}
+              />
+            ) : (
+              <div className="product-card-no-img">אין תמונה</div>
+            )}
+          </div>
+
+          {/* Desktop View SKU Image */}
+          <div className="desktop-only-img-wrapper">
+            {activeImage ? (
+              <SmartImage
+                src={activeImage}
+                alt={productModel.name}
+                className="product-card-img-full"
+                eager={index < 2}
+                onPlayClick={() => setLightboxOpen(true)}
+              />
+            ) : (
+              <div className="product-card-no-img">אין תמונה</div>
+            )}
+          </div>
         </div>
         <div className="mobile-edge-content">
           <div className="product-card-header">
-            <h3 className="product-card-title">{productModel.name}</h3>
-            <div className="product-card-price">
-              {currentPrice}₪ <span className="product-card-price-unit">/ מטר</span>
+            {/* Line 1: Model Name & Height */}
+            <div className="product-card-row">
+              <h3 className="product-card-title">{productModel.name}</h3>
+              {productModel.fabric_height && (
+                <div className="product-card-height">
+                  <MoveVertical className="product-height-icon" />
+                  <span>{productModel.fabric_height}מ'</span>
+                </div>
+              )}
             </div>
-            {productModel.fabric_height && (
-              <div className="product-card-height">
-                גובה {productModel.fabric_height}מ'
+
+            {/* Line 2: Price & Color Swatch Stack */}
+            <div className="product-card-row product-card-subrow">
+              <div className="product-card-price">
+                {currentPrice}₪ <span className="product-card-price-unit">/ מטר</span>
               </div>
-            )}
+              {productModel.color_skus && productModel.color_skus.length > 0 && (
+                <div className="product-card-swatch-stack">
+                  <div className="swatch-stack-bubbles">
+                    {productModel.color_skus.slice(0, 2).map((sku) => {
+                      const imgUrl = sku.image_urls && sku.image_urls.length > 0 ? sku.image_urls[sku.image_urls.length - 1] : null;
+                      return (
+                        <div key={sku.id} className="swatch-stack-bubble">
+                          {imgUrl ? (
+                            <img src={imgUrl} alt={sku.color_name} />
+                          ) : (
+                            <span className="swatch-stack-text">{sku.color_name.substring(0, 2)}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {productModel.color_skus.length > 2 && (
+                    <span className="swatch-stack-more">{productModel.color_skus.length - 2}+</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="product-swatches-container">
