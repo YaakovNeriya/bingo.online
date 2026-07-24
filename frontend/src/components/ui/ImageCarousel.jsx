@@ -4,7 +4,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import SmartImage from './SmartImage';
 
-const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, onPlayClick, showDots = true, onIndexChange, autoPlay = false, autoPlayInterval = 5000, isFullScreen = false, duration = 80 }) => {
+const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, onPlayClick, showDots = true, onIndexChange, targetIndex, setEmblaApiProp, autoPlay = false, autoPlayInterval = 5000, isFullScreen = false, duration = 80 }) => {
   // Conditionally include autoplay plugin, memoized to prevent re-initialization
   const plugins = React.useMemo(() => {
     return (autoPlay && images && images.length > 1 && !isFullScreen) 
@@ -15,11 +15,26 @@ const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, on
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
     direction: 'rtl', // Native RTL support!
-    duration: duration // Customizable transition speed
+    duration: duration, // Customizable transition speed
+    startIndex: typeof targetIndex === 'number' && targetIndex >= 0 ? targetIndex : 0
   }, plugins);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState([]);
+
+  useEffect(() => {
+    if (setEmblaApiProp) {
+      setEmblaApiProp(emblaApi);
+    }
+  }, [emblaApi, setEmblaApiProp]);
+
+  useEffect(() => {
+    if (emblaApi && typeof targetIndex === 'number' && targetIndex >= 0) {
+      if (emblaApi.selectedScrollSnap() !== targetIndex) {
+        emblaApi.scrollTo(targetIndex);
+      }
+    }
+  }, [emblaApi, targetIndex]);
 
   const scrollPrev = useCallback((e) => {
     e.stopPropagation();
@@ -31,12 +46,17 @@ const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, on
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
+  const onIndexChangeRef = React.useRef(onIndexChange);
+  useEffect(() => {
+    onIndexChangeRef.current = onIndexChange;
+  }, [onIndexChange]);
+
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     const idx = emblaApi.selectedScrollSnap();
     setSelectedIndex(idx);
-    if (onIndexChange) onIndexChange(idx);
-  }, [emblaApi, onIndexChange]);
+    if (onIndexChangeRef.current) onIndexChangeRef.current(idx);
+  }, [emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;

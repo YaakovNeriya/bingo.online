@@ -9,6 +9,7 @@ const ProductCard = ({ productModel, index = 999 }) => {
   if (!productModel || productModel.color_skus.length === 0) return null;
 
   const [activeSku, setActiveSku] = useState(productModel.color_skus[0]);
+  const [userSelectedSku, setUserSelectedSku] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const rawPrice = activeSku.specific_price || productModel.base_price;
   const currentPrice = Number(rawPrice) % 1 === 0 ? Number(rawPrice) : parseFloat(Number(rawPrice).toFixed(2));
@@ -21,7 +22,13 @@ const ProductCard = ({ productModel, index = 999 }) => {
     <>
       <div
         className="product-card-glass hover-lift mobile-edge-card"
-        onClick={() => navigate(`/product/${productModel.id}?sku=${activeSku.id}`)}
+        onClick={() => {
+          if (userSelectedSku) {
+            navigate(`/product/${productModel.id}?sku=${activeSku.id}`);
+          } else {
+            navigate(`/product/${productModel.id}`);
+          }
+        }}
       >
         <div className="mobile-edge-image">
           {/* Card Badges (Over Image) */}
@@ -118,6 +125,7 @@ const ProductCard = ({ productModel, index = 999 }) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveSku(sku);
+                    setUserSelectedSku(true);
                   }}
                   className={swatchClass}
                 >

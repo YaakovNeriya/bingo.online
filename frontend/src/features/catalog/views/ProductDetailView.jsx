@@ -51,7 +51,8 @@ const ProductDetailView = () => {
   if (error) return <div className="container" style={{ paddingBottom: '2rem', color: 'var(--danger-color)' }}>{error}</div>;
   if (!productModel) return null;
 
-  const currentPrice = selectedSku?.specific_price || productModel.base_price;
+  const activeSku = selectedSku || (productModel.color_skus && productModel.color_skus.length > 0 ? productModel.color_skus[0] : null);
+  const currentPrice = activeSku?.specific_price || productModel.base_price;
 
   return (
     <div className="container" style={{ paddingBottom: '4rem' }}>
@@ -73,7 +74,9 @@ const ProductDetailView = () => {
         {/* Right Side (RTL) - Image Gallery */}
         <div className="grid-image">
           <ProductImageGallery 
+            productModel={productModel}
             selectedSku={selectedSku} 
+            setSelectedSku={setSelectedSku}
             currentImageIndex={currentImageIndex} 
             setCurrentImageIndex={setCurrentImageIndex} 
           />
@@ -83,7 +86,7 @@ const ProductDetailView = () => {
         <div className="grid-details">
           <ProductHeader 
             productModel={productModel} 
-            selectedSku={selectedSku} 
+            selectedSku={activeSku} 
             user={user} 
           />
 
@@ -102,7 +105,7 @@ const ProductDetailView = () => {
         {/* Left Side (RTL) - Cart & Actions */}
         <div className="grid-cart">
           <AddToCartPanel 
-            selectedSku={selectedSku} 
+            selectedSku={activeSku} 
             user={user} 
             currentPrice={currentPrice} 
             lengthMeters={lengthMeters} 

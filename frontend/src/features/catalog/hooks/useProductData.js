@@ -43,9 +43,25 @@ export const useProductData = (modelId) => {
     }
     
     if (foundModel) {
-      // Deep copy to allow patching stock without mutating context
       const modelCopy = JSON.parse(JSON.stringify(foundModel));
+      
+      // Parse ?sku= to set selectedSku perfectly in sync with loading=false
+      const searchParams = new URLSearchParams(window.location.search);
+      const skuParam = searchParams.get('sku');
+      let initialSku = null;
+      if (skuParam && modelCopy.color_skus) {
+        initialSku = modelCopy.color_skus.find(s => s.id === parseInt(skuParam)) || null;
+      }
+      if (!initialSku) {
+        if (modelCopy.video_url || modelCopy.image_url) {
+          initialSku = null;
+        } else if (modelCopy.color_skus && modelCopy.color_skus.length > 0) {
+          initialSku = modelCopy.color_skus[0];
+        }
+      }
+
       setProductModel(modelCopy);
+      setSelectedSku(initialSku);
       setLoading(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       
@@ -81,28 +97,24 @@ export const useProductData = (modelId) => {
   useEffect(() => {
     if (!productModel || !productModel.color_skus || productModel.color_skus.length === 0) return;
     
-    let targetSku = productModel.color_skus[0];
-    
     // Parse the ?sku= ID from the URL if present
     const searchParams = new URLSearchParams(location.search);
     const skuParam = searchParams.get('sku');
+    
     if (skuParam) {
       const matchedSku = productModel.color_skus.find(s => s.id === parseInt(skuParam));
       if (matchedSku) {
-        targetSku = matchedSku;
+        setSelectedSku(matchedSku);
+        return;
       }
     }
     
-    setSelectedSku(targetSku);
-    
-    // Only reset image index if the actual SKU ID changed to avoid resetting on stock update
-    setSelectedSku(prevSku => {
-      if (!prevSku || prevSku.id !== targetSku.id) {
-        setCurrentImageIndex(0);
-      }
-      return targetSku;
-    });
-    
+    // If model has video or image, start with null (no swatch selected), else first SKU
+    if (productModel.video_url || productModel.image_url) {
+      setSelectedSku(null);
+    } else {
+      setSelectedSku(productModel.color_skus[0]);
+    }
   }, [productModel, location.search]);
 
   // Compute related and random models

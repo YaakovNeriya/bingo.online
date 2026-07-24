@@ -151,9 +151,6 @@ const SmartImage = ({ src, alt, style, className, hidePlayIcon = false, eager = 
           }
           playerRef.current = null;
         }
-        if (containerRef.current) {
-          containerRef.current.innerHTML = '';
-        }
       }, 150);
     };
   }, [lightboxMode, wistiaId]);
