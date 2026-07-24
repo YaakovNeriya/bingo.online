@@ -111,7 +111,6 @@ const SmartImage = ({ src, alt, style, className, hidePlayIcon = false, eager = 
           player.setAttribute('preload', 'auto');
         }
         player.setAttribute('autoplay', 'true');
-        player.removeAttribute('big-play-button');
         player.muted = false;
         player.removeAttribute('muted');
         
@@ -123,6 +122,19 @@ const SmartImage = ({ src, alt, style, className, hidePlayIcon = false, eager = 
         containerRef.current.innerHTML = '';
         containerRef.current.appendChild(player);
         playerRef.current = player;
+
+        if (window._wq) {
+          window._wq.push({
+            id: wistiaId,
+            onReady: function(video) {
+              try {
+                video.play();
+              } catch (e) {
+                console.error("Wistia play error:", e);
+              }
+            }
+          });
+        }
       });
     }
     

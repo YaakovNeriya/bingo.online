@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import client from '../../../api/client';
 import { CatalogContext } from '../CatalogContext';
@@ -11,7 +11,11 @@ export const useProductData = (modelId) => {
   const [error, setError] = useState('');
   
   const [productModel, setProductModel] = useState(null);
+  
+  // selectedSku controls the active color bubble and cart selection
   const [selectedSku, setSelectedSku] = useState(null);
+  
+  // currentImageIndex dictates the active slide in the unified media gallery
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const minCutLength = parseFloat(settings['minimum_order_length']) || 1.0;
@@ -44,24 +48,38 @@ export const useProductData = (modelId) => {
     
     if (foundModel) {
       const modelCopy = JSON.parse(JSON.stringify(foundModel));
+      setProductModel(modelCopy);
       
-      // Parse ?sku= to set selectedSku perfectly in sync with loading=false
+      // Pre-compute unified media locally just to find initial index based on URL
+      const tempMedia = [];
+      if (modelCopy.video_url) tempMedia.push({ url: modelCopy.video_url, type: 'video', skuId: null });
+      if (modelCopy.image_url) tempMedia.push({ url: modelCopy.image_url, type: 'image', skuId: null });
+      if (modelCopy.color_skus) {
+        modelCopy.color_skus.forEach(sku => {
+          if (sku.image_urls) {
+            sku.image_urls.forEach(url => tempMedia.push({ url, type: 'image', skuId: sku.id }));
+          }
+        });
+      }
+
+      // Parse ?sku= param to set initial gallery index if navigating directly to a color
       const searchParams = new URLSearchParams(window.location.search);
       const skuParam = searchParams.get('sku');
-      let initialSku = null;
-      if (skuParam && modelCopy.color_skus) {
-        initialSku = modelCopy.color_skus.find(s => s.id === parseInt(skuParam)) || null;
-      }
-      if (!initialSku) {
-        if (modelCopy.video_url || modelCopy.image_url) {
-          initialSku = null;
-        } else if (modelCopy.color_skus && modelCopy.color_skus.length > 0) {
-          initialSku = modelCopy.color_skus[0];
+      let initialIndex = 0;
+      let initialSkuObj = null;
+
+      if (skuParam) {
+        const skuIdInt = parseInt(skuParam);
+        const foundIndex = tempMedia.findIndex(m => m.skuId === skuIdInt);
+        if (foundIndex !== -1) {
+          initialIndex = foundIndex;
+          initialSkuObj = modelCopy.color_skus.find(s => s.id === skuIdInt) || null;
         }
       }
 
-      setProductModel(modelCopy);
-      setSelectedSku(initialSku);
+      setCurrentImageIndex(initialIndex);
+      setSelectedSku(initialSkuObj);
+      
       setLoading(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       
@@ -93,29 +111,40 @@ export const useProductData = (modelId) => {
     }
   }, [catalog, modelId, isCatalogLoading]);
 
-  // Select SKU when productModel updates or URL search params change
+  // Generate the Unified Media Array for the gallery components
+  const unifiedMedia = useMemo(() => {
+    if (!productModel) return [];
+    
+    const media = [];
+    if (productModel.video_url) media.push({ url: productModel.video_url, type: 'video', skuId: null });
+    if (productModel.image_url) media.push({ url: productModel.image_url, type: 'image', skuId: null });
+    
+    if (productModel.color_skus) {
+      productModel.color_skus.forEach(sku => {
+        if (sku.image_urls) {
+          sku.image_urls.forEach(url => media.push({ url, type: 'image', skuId: sku.id }));
+        }
+      });
+    }
+    return media;
+  }, [productModel]);
+
+  // Sync selectedSku when currentImageIndex changes via swiping in gallery
   useEffect(() => {
-    if (!productModel || !productModel.color_skus || productModel.color_skus.length === 0) return;
-    
-    // Parse the ?sku= ID from the URL if present
-    const searchParams = new URLSearchParams(location.search);
-    const skuParam = searchParams.get('sku');
-    
-    if (skuParam) {
-      const matchedSku = productModel.color_skus.find(s => s.id === parseInt(skuParam));
-      if (matchedSku) {
-        setSelectedSku(matchedSku);
-        return;
+    if (unifiedMedia.length > 0 && currentImageIndex >= 0 && currentImageIndex < unifiedMedia.length) {
+      const currentMedia = unifiedMedia[currentImageIndex];
+      if (currentMedia.skuId !== null) {
+        const skuObj = productModel?.color_skus?.find(s => s.id === currentMedia.skuId);
+        if (skuObj && (!selectedSku || selectedSku.id !== skuObj.id)) {
+          setSelectedSku(skuObj);
+        }
+      } else {
+        if (selectedSku !== null) {
+          setSelectedSku(null);
+        }
       }
     }
-    
-    // If model has video or image, start with null (no swatch selected), else first SKU
-    if (productModel.video_url || productModel.image_url) {
-      setSelectedSku(null);
-    } else {
-      setSelectedSku(productModel.color_skus[0]);
-    }
-  }, [productModel, location.search]);
+  }, [currentImageIndex, unifiedMedia, productModel, selectedSku]);
 
   // Compute related and random models
   const relatedModels = productModel && catalog && catalog.length > 0
@@ -138,9 +167,10 @@ export const useProductData = (modelId) => {
     error,
     productModel,
     selectedSku,
-    setSelectedSku,
+    setSelectedSku, // can still be used directly if needed, but usually we just change currentImageIndex
     currentImageIndex,
     setCurrentImageIndex,
+    unifiedMedia,
     minCutLength,
     lowStockThreshold,
     relatedModels,

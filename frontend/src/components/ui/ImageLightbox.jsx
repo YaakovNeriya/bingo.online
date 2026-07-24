@@ -6,13 +6,8 @@ import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import SmartImage from './SmartImage';
 import { useModalBack } from '../../hooks/useModalBack';
 
-const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
-  useModalBack(true, onClose, 'image_lightbox');
-
-  // --- Data ---
-  const imageList = React.useMemo(() => {
-    return images && images.length > 0 ? images : (src ? [src] : []);
-  }, [images, src]);
+const ImageLightbox = ({ unifiedMedia, initialIndex = 0, alt, onClose }) => {
+  useModalBack(true, () => onClose(currentIndex), 'image_lightbox');
 
   // --- Zoom state (ref for synchronous reads, state for re-renders) ---
   const isZoomedRef = useRef(false);
@@ -20,7 +15,7 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
 
   const handleZoomChange = useCallback((scale) => {
     const zoomed = scale > 1.05;
-    isZoomedRef.current = zoomed; // Synchronous update — critical for watchDrag
+    isZoomedRef.current = zoomed; // Synchronous update — critical for watchDrag and keys
     setIsZoomed(zoomed);          // Async update — triggers re-render for UI
   }, []);
 
@@ -28,9 +23,9 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     direction: 'rtl',
-    startIndex: initialIndex < imageList.length ? initialIndex : 0,
+    startIndex: initialIndex < (unifiedMedia?.length || 0) ? initialIndex : 0,
     duration: 25,
-    watchDrag: () => !isZoomedRef.current
+    watchDrag: () => !isZoomedRef.current // Pause drag when zoomed
   });
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
@@ -64,19 +59,20 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowRight') handleNext();
-      if (e.key === 'ArrowLeft') handlePrev();
+      if (e.key === 'Escape') onClose(currentIndex);
+      // Pause keyboard navigation when zoomed in
+      if (e.key === 'ArrowRight' && !isZoomedRef.current) handleNext();
+      if (e.key === 'ArrowLeft' && !isZoomedRef.current) handlePrev();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, handleNext, handlePrev]);
+  }, [onClose, handleNext, handlePrev, currentIndex]);
 
   // --- Render ---
-  if (imageList.length === 0) return null;
+  if (!unifiedMedia || unifiedMedia.length === 0) return null;
 
   return createPortal(
-    <div 
+    <div
       style={{
         position: 'fixed',
         top: 0, left: 0, right: 0, bottom: 0,
@@ -88,14 +84,14 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
       }}
     >
       {/* Background click to close */}
-      <div 
+      <div
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, cursor: 'zoom-out' }}
-        onClick={onClose}
+        onClick={() => onClose(currentIndex)}
       />
 
       {/* Close button */}
-      <button 
-        onClick={onClose}
+      <button
+        onClick={() => onClose(currentIndex)}
         style={{
           position: 'absolute',
           top: '20px',
@@ -112,7 +108,7 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
       </button>
 
       {/* Next button (right arrow) */}
-      {imageList.length > 1 && (
+      {unifiedMedia.length > 1 && (
         <button
           onClick={handleNext}
           style={{
@@ -127,7 +123,9 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 10000
+            zIndex: 10000,
+            opacity: isZoomed ? 0.3 : 1,
+            pointerEvents: isZoomed ? 'none' : 'auto'
           }}
         >
           <ChevronRight size={28} />
@@ -135,43 +133,42 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
       )}
 
       {/* Embla Carousel Viewport */}
-      <div 
-        className="embla" 
-        ref={emblaRef} 
+      <div
+        className="embla"
+        ref={emblaRef}
         dir="rtl"
-        style={{ 
-          width: '100%', 
-          height: '100%', 
-          overflow: 'hidden', 
-          zIndex: 9999 
+        style={{
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          zIndex: 9999
         }}
         onClick={(e) => {
-          if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
-            onClose();
-          }
+          // REMOVED aggressive tap-to-close to allow react-zoom-pan-pinch to process double-taps.
+          // The user can close via the X button or Escape key.
         }}
       >
         <div className="embla__container" style={{ display: 'flex', height: '100%' }}>
-          {imageList.map((imgUrl, idx) => {
-            const isVideo = imgUrl && (imgUrl.includes('wistia.com') || imgUrl.includes('wistia.net'));
+          {unifiedMedia.map((media, idx) => {
+            const isVideo = media.type === 'video' || (media.url && (media.url.includes('wistia.com') || media.url.includes('wistia.net')));
             return (
-              <div 
-                className="embla__slide" 
-                key={idx} 
-                style={{ 
-                  flex: '0 0 100%', 
-                  minWidth: 0, 
-                  height: '100%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+              <div
+                className="embla__slide"
+                key={idx}
+                style={{
+                  flex: '0 0 100%',
+                  minWidth: 0,
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
                   justifyContent: 'center',
                   position: 'relative'
                 }}
               >
                 {isVideo ? (
-                  <SmartImage 
-                    src={imgUrl} 
-                    alt={alt} 
+                  <SmartImage
+                    src={media.url}
+                    alt={alt}
                     lightboxMode={idx === currentIndex}
                     style={{
                       width: '100%',
@@ -181,7 +178,7 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
                       objectFit: 'contain',
                       borderRadius: '4px'
                     }}
-                    onClick={(e) => e.stopPropagation()} 
+                    onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
                   <TransformWrapper
@@ -190,34 +187,48 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
                     maxScale={5}
                     centerOnInit
                     wheel={{ wheelDisabled: false }}
-                    doubleClick={{ disabled: false, step: 2 }}
+                    doubleClick={{ disabled: true }}
                     panning={{ disabled: !isZoomed }}
                     onTransform={(ref) => {
                       handleZoomChange(ref.state.scale);
                     }}
                   >
-                    {() => (
-                      <TransformComponent 
-                        wrapperStyle={{ width: "100%", height: "100%", touchAction: "none" }} 
+                    {({ state, resetTransform, zoomIn }) => (
+                      <TransformComponent
+                        wrapperStyle={{ width: "100%", height: "100%", touchAction: "none" }}
                         contentStyle={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
                       >
-                        <SmartImage 
-                          src={imgUrl} 
-                          alt={`${alt} ${idx + 1}`} 
-                          lightboxMode={true}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            maxWidth: '90vw',
-                            maxHeight: '90vh',
-                            objectFit: 'contain',
-                            borderRadius: '4px',
-                            cursor: 'grab',
-                            userSelect: 'none',
-                            WebkitUserDrag: 'none'
+                        <div
+                          style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            if (state.scale > 1.05) {
+                              // If zoomed in at all, reset to 100%
+                              resetTransform(300, "easeOut");
+                            } else {
+                              // If at 100%, zoom in by 0.5 (to 150%) at the center
+                              zoomIn(0.8, 600, "easeOut");
+                            }
                           }}
-                          onClick={(e) => e.stopPropagation()} 
-                        />
+                        >
+                          <SmartImage
+                            src={media.url}
+                            alt={`${alt} ${idx + 1}`}
+                            lightboxMode={true}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              maxWidth: '90vw',
+                              maxHeight: '90vh',
+                              objectFit: 'contain',
+                              borderRadius: '4px',
+                              cursor: 'grab',
+                              userSelect: 'none',
+                              WebkitUserDrag: 'none'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
                       </TransformComponent>
                     )}
                   </TransformWrapper>
@@ -229,7 +240,7 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
       </div>
 
       {/* Prev button (left arrow) */}
-      {imageList.length > 1 && (
+      {unifiedMedia.length > 1 && (
         <button
           onClick={handlePrev}
           style={{
@@ -244,7 +255,9 @@ const ImageLightbox = ({ src, images, initialIndex = 0, alt, onClose }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 10000
+            zIndex: 10000,
+            opacity: isZoomed ? 0.3 : 1,
+            pointerEvents: isZoomed ? 'none' : 'auto'
           }}
         >
           <ChevronLeft size={28} />

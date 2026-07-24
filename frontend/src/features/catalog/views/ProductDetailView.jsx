@@ -29,6 +29,7 @@ const ProductDetailView = () => {
     setSelectedSku,
     currentImageIndex,
     setCurrentImageIndex,
+    unifiedMedia,
     minCutLength,
     lowStockThreshold,
     relatedModels,
@@ -75,6 +76,7 @@ const ProductDetailView = () => {
         <div className="grid-image">
           <ProductImageGallery 
             productModel={productModel}
+            unifiedMedia={unifiedMedia}
             selectedSku={selectedSku} 
             setSelectedSku={setSelectedSku}
             currentImageIndex={currentImageIndex} 
@@ -96,6 +98,7 @@ const ProductDetailView = () => {
 
           <ColorSelector 
             productModel={productModel} 
+            unifiedMedia={unifiedMedia}
             selectedSku={selectedSku} 
             setSelectedSku={setSelectedSku} 
             setCurrentImageIndex={setCurrentImageIndex} 

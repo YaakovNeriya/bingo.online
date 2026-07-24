@@ -148,3 +148,20 @@ my_project/
 - **Stage 7: Admin Panel**: Implement backend API routes for administrators (CRUD, reports, abandoned cart cleanup).
 - **Stage 8: Frontend Client**: Bootstrap the React infrastructure, configure `src/api` for server communication, and build the UI features (catalog, cart, checkout, admin) according to the feature-based structure.
 
+## 8. Historical Context of Order Lifecycle Changes (Phases 1-3)
+1. **Phase 1: Database & Admin Panel:**
+   - Default `Order` status changed to `order_unpaid` (in `models.py`).
+   - Mapped new statuses and icons in Admin Panel (`RegionCard.jsx`): `cart` 🛒, `order_unpaid` 📦, `order_paid` 💲📦, `cutting_unpaid` ✂️, `cutting_paid` ✂️💲, `archived`.
+   - Hidden "Order #" text from active carts (since they have negative IDs).
+   - Optimized `get_customer_orders` to return a single virtual cart, treating it as history 1 for new customers.
+
+2. **Phase 2: Checkout Logic (Toggle Button):**
+   - Created `POST /orders/{order_id}/revert_to_cart` to release stock and move order back to cart.
+   - The top "Send Order" (שלח הזמנה) button acts as a Toggle: Clicking it converts the cart to an order (`order_unpaid`) and deducts stock. Clicking again reverts to cart and restores stock.
+
+3. **Phase 3: Secure Payment & Season Closure:**
+   - Added a "Secure Payment" (לתשלום מאובטח) button at the bottom of the cart (currently Disabled).
+   - After the deadline passes: orders lock, statuses change to `cutting_unpaid` / `cutting_paid`, and only payments are allowed (no item modifications).
+   - "Close Season" (סגירת עונה) in the admin panel moves all orders to `archived`, and the next order for the customer becomes +1 in their history.
+
+

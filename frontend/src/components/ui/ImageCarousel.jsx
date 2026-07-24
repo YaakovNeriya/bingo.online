@@ -4,13 +4,22 @@ import Autoplay from 'embla-carousel-autoplay';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import SmartImage from './SmartImage';
 
-const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, onPlayClick, showDots = true, onIndexChange, autoPlay = false, autoPlayInterval = 5000, isFullScreen = false, duration = 80 }) => {
+const ImageCarousel = ({ unifiedMedia, images, activeIndex, alt, height = '200px', aspectRatio, onClick, onPlayClick, showDots = true, onIndexChange, autoPlay = false, autoPlayInterval = 5000, isFullScreen = false, duration = 80 }) => {
+  // Normalize legacy `images` array into unifiedMedia format
+  const normalizedMedia = React.useMemo(() => {
+    if (unifiedMedia && unifiedMedia.length > 0) return unifiedMedia;
+    if (images && images.length > 0) {
+      return images.map(img => ({ url: img, type: 'image', skuId: null }));
+    }
+    return [];
+  }, [unifiedMedia, images]);
+
   // Conditionally include autoplay plugin, memoized to prevent re-initialization
   const plugins = React.useMemo(() => {
-    return (autoPlay && images && images.length > 1 && !isFullScreen) 
+    return (autoPlay && normalizedMedia && normalizedMedia.length > 1 && !isFullScreen) 
       ? [Autoplay({ delay: autoPlayInterval, stopOnInteraction: true, stopOnMouseEnter: true })] 
       : [];
-  }, [autoPlay, images, isFullScreen, autoPlayInterval]);
+  }, [autoPlay, normalizedMedia, isFullScreen, autoPlayInterval]);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
@@ -34,9 +43,11 @@ const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, on
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     const idx = emblaApi.selectedScrollSnap();
-    setSelectedIndex(idx);
-    if (onIndexChange) onIndexChange(idx);
-  }, [emblaApi, onIndexChange]);
+    if (idx !== selectedIndex) {
+      setSelectedIndex(idx);
+      if (onIndexChange) onIndexChange(idx);
+    }
+  }, [emblaApi, onIndexChange, selectedIndex]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -49,6 +60,13 @@ const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, on
       emblaApi.off('reInit', onSelect);
     };
   }, [emblaApi, onSelect]);
+
+  // Sync activeIndex from props to carousel
+  useEffect(() => {
+    if (emblaApi && activeIndex !== undefined && activeIndex !== selectedIndex) {
+      emblaApi.scrollTo(activeIndex);
+    }
+  }, [emblaApi, activeIndex, selectedIndex]);
 
   // Handle FullScreen Pause logic manually if state changes dynamically
   useEffect(() => {
@@ -63,7 +81,7 @@ const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, on
     }
   }, [isFullScreen, emblaApi]);
 
-  if (!images || images.length === 0) {
+  if (!normalizedMedia || normalizedMedia.length === 0) {
     return (
       <div 
         style={{ 
@@ -84,11 +102,11 @@ const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, on
     );
   }
 
-  // If there's only one image, no need for carousel logic
-  if (images.length === 1) {
+  // If there's only one media item, no need for carousel logic
+  if (normalizedMedia.length === 1) {
     return (
       <SmartImage 
-        src={images[0]} 
+        src={normalizedMedia[0].url} 
         alt={alt} 
         style={{ 
           width: '100%', 
@@ -128,10 +146,10 @@ const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, on
         style={{ overflow: 'hidden', height: '100%' }}
       >
         <div className="embla__container" style={{ display: 'flex', height: '100%' }}>
-          {images.map((img, idx) => (
+          {normalizedMedia.map((media, idx) => (
             <div className="embla__slide" key={idx} style={{ flex: '0 0 100%', minWidth: 0, position: 'relative' }}>
               <SmartImage 
-                src={img}
+                src={media.url}
                 alt={`${alt} ${idx + 1}`}
                 style={{ 
                   width: '100%', 
@@ -146,7 +164,7 @@ const ImageCarousel = ({ images, alt, height = '200px', aspectRatio, onClick, on
         </div>
       </div>
       
-      {images.length > 1 && (
+      {normalizedMedia.length > 1 && (
         <>
           <button
             onClick={scrollPrev}

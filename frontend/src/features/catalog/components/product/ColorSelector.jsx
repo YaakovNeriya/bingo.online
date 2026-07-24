@@ -1,7 +1,7 @@
 import React from 'react';
 import SmartImage from '../../../../components/ui/SmartImage';
 
-const ColorSelector = ({ productModel, selectedSku, setSelectedSku, setCurrentImageIndex }) => {
+const ColorSelector = ({ productModel, unifiedMedia, selectedSku, setSelectedSku, setCurrentImageIndex }) => {
   return (
     <div>
       <h4 style={{ marginBottom: '0.5rem' }}>בחר צבע:</h4>
@@ -14,7 +14,16 @@ const ColorSelector = ({ productModel, selectedSku, setSelectedSku, setCurrentIm
           return (
             <div 
               key={sku.id} 
-              onClick={() => { setSelectedSku(sku); setCurrentImageIndex(0); }}
+              onClick={() => {
+                // Find first image index of this SKU in unifiedMedia
+                const firstIndex = unifiedMedia.findIndex(m => m.skuId === sku.id);
+                if (firstIndex !== -1) {
+                  setCurrentImageIndex(firstIndex);
+                } else {
+                  // Fallback if no images found for this SKU
+                  setSelectedSku(sku);
+                }
+              }}
               style={{
                 display: 'flex',
                 flexDirection: 'column',

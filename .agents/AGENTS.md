@@ -60,64 +60,42 @@ All new features MUST be organized under `src/features/<feature_name>/`:
 
 ## Security & Stability Standards (15 Core Rules)
 
-### Backend (Architecture & Resilience)
-1. **Security First & Zero Trust:** Never trust client input. All DB modifications require strict server-side permission validation (e.g., `Depends(get_current_active_superuser)`). All input MUST be validated via Pydantic.
-2. **Database Transactions:** Multi-step operations (e.g., checkout & inventory deduction) MUST be executed in a single atomic transaction. Use `async with db.begin():` to prevent partial updates.
-3. **Graceful Error Handling:** Never leak raw DB exceptions (500) to the frontend. Catch exceptions, log them internally, and return sanitized `HTTPException`s to the user.
-4. **Mission-Critical Testing (TDD):** Any logic touching money, inventory, or order lifecycle must be backed by a backend Unit Test covering edge cases (negative numbers, empty carts).
-5. **Decimals for Currency:** Never use `float` for money or meters. Always use `Numeric(10,2)` in DB and `Decimal` in Python.
-6. **Rate Limiting:** Endpoints receiving forms or handling heavy queries MUST have Rate Limiting (e.g., slowapi) to prevent DDoS or Brute Force attacks.
-7. **Audit Logs:** Critical state changes (Order approval, Inventory changes) must be recorded in an `AuditLog` including: Who, When, What (Before/After).
-8. **Migrations Only:** Manual DB schema changes are strictly prohibited. All schema changes must pass through an Alembic migration.
+### Backend (Rules 1-8)
+1. **Zero Trust:** Server-side Pydantic validation & permission checks (`Depends(get_current_active_superuser)`).
+2. **Atomic Transactions:** Multi-step ops (checkout/stock) must use `async with db.begin()`.
+3. **Error Handling:** Sanitize DB exceptions into clean `HTTPException`s.
+4. **TDD:** Unit tests for money, inventory, and order lifecycle edge cases.
+5. **Decimals Only:** Use `Numeric(10,2)` in DB and `Decimal` in Python (never `float`).
+6. **Rate Limiting:** Protect form/heavy endpoints with rate limiting (`slowapi`).
+7. **Audit Logs:** Log critical state changes in `AuditLog` (Who/When/What).
+8. **Migrations:** Schema changes must pass through Alembic migrations.
 
-### Frontend (State & UX)
-9. **State Management:** Never mutate React state directly. Avoid prop drilling deep trees; use Context API (e.g., `AuthContext`, `CartContext`) for global data.
-10. **JWT Expiry Handling:** Token expiry must be handled automatically in the Axios interceptor (e.g., transparent refresh or seamless redirect to login preserving the `returnUrl`).
-11. **Loading & Error States:** Every API call must visually handle 3 states: Loading, Success, Failure. Crashing the UI or showing blank screens during network requests is unacceptable.
-12. **Secure Token Storage:** Avoid storing highly sensitive tokens (Admin JWT) in `localStorage` where they are vulnerable to XSS. Prefer `httpOnly` cookies where possible.
-13. **Performance (No Inline Styles in Loops):** Never use inline `style={{...}}` properties inside `.map()` loops or highly repeated components. Extract styles to external CSS classes. For conditional styling, toggle dynamic classes (e.g., `className={inStock ? "in-stock" : "out-of-stock"}`) rather than injecting design objects directly into the code, to prevent Virtual DOM memory bloat.
+### Frontend (Rules 9-13)
+9. **Immutable State:** No direct React state mutation; use Context API for global state.
+10. **JWT Interceptor:** Handle token expiry/refresh transparently in Axios interceptor.
+11. **Loading & Error UI:** Every API call must visually handle Loading, Success, and Error states.
+12. **Token Security:** Store sensitive tokens in `httpOnly` cookies where possible (avoid `localStorage`).
+13. **Performance:** Use CSS classes for dynamic/repeated styling instead of inline `style={{...}}` in `.map()` loops.
 
-### DevOps & Workflow
-13. **Environment Segregation:** Development, Staging, and Production MUST use completely separated databases and API keys.
-14. **Secret Management:** Never commit secrets to Git. `.env` must remain in `.gitignore`. Use a secrets manager or server environment variables.
-15. **Backup Resilience:** Backups are useless if they cannot be restored. Scheduled backups must exist, and restoration must be verified periodically on a staging environment.
+### DevOps (Rules 14-15)
+14. **Environment Isolation:** Dev, Staging, and Prod must use separate DBs and API keys.
+15. **Secret & Backup Resilience:** Never commit `.env`/secrets to Git; maintain and test automated DB backups.
+
+## Schemas & Common Pitfalls (Cart vs. Order)
+- **Schema Mismatches:** `CartItemOut` returns `color_sku.product_model`, but `OrderItemOut` only returns `color_sku`. Frontend components rendering active orders must handle missing `product_model` gracefully.
+- **Optional User Region:** `user.region_id` can be `None`. Always validate before accessing `user.region.shipping_cost` during checkout to prevent 500 errors.
 
 ## General Development Philosophy
 - **Root Changes over Patches (No Band-Aids & Performance Purity):** When the user requests a specific change, do not apply a superficial patch or workaround ("תלאי"). Trace the issue to its source and implement the change from the root. Furthermore, **never sacrifice performance or proper architectural patterns for a "quick fix"** (e.g., bypassing Nginx and proxying static files to the backend just to avoid fixing a Docker permissions issue). Always resolve the root infrastructure issue so the system runs optimally as intended in production.
 
 ## Console Error Diagnoser Skill & The "New Order Lifecycle" Pre-Check
-**PRE-CHECK:** Before diagnosing ANY bug, console error, or 500 error, you MUST actively cross-reference the error with the comprehensive historical changes we made to the ordering process. Ask yourself: "Is this bug a side-effect of the new Cart/Order separation logic or missing schemas?"
-
-**Historical Context of System Changes (Always keep these in mind):**
-1. **Phase 1: Database & Admin Panel:**
-   - Default `Order` status changed to `order_unpaid` (in `models.py`).
-   - Mapped new statuses and icons in Admin Panel (`RegionCard.jsx`): `cart` 🛒, `order_unpaid` 📦, `order_paid` 💲📦, `cutting_unpaid` ✂️, `cutting_paid` ✂️💲, `archived`.
-   - Hidden "Order #" text from active carts (since they have negative IDs).
-   - Optimized `get_customer_orders` to return a single virtual cart, treating it as history 1 for new customers.
-
-2. **Phase 2: Checkout Logic (Toggle Button):**
-   - Created `POST /orders/{order_id}/revert_to_cart` to release stock and move order back to cart.
-   - The top "Send Order" (שלח הזמנה) button acts as a Toggle: Clicking it converts the cart to an order (`order_unpaid`) and deducts stock. Clicking again reverts to cart and restores stock.
-
-3. **Phase 3: Secure Payment & Season Closure:**
-   - Added a "Secure Payment" (לתשלום מאובטח) button at the bottom of the cart (currently Disabled).
-   - After the deadline passes: orders lock, statuses change to `cutting_unpaid` / `cutting_paid`, and only payments are allowed (no item modifications).
-   - "Close Season" (סגירת עונה) in the admin panel moves all orders to `archived`, and the next order for the customer becomes +1 in their history.
-
-4. **Common Pitfalls from these Changes:**
-   - **Schema Mismatches:** `CartItemOut` returns `color_sku.product_model`, but `OrderItemOut` only returns `color_sku`. Frontend components rendering active orders might crash if they expect `product_model`.
-   - **Missing User Regions:** `user.region_id` can be `None`. Accessing `user.region.shipping_cost` during checkout will throw a 500 error if not validated first.
+**PRE-CHECK:** Before diagnosing ANY bug, console error, or 500 error, you MUST actively cross-reference the error with the ordering process logic and schemas (see `ignore/Fabric Store.md` for historical Phase 1-3 details). Ask yourself: "Is this bug a side-effect of the Cart/Order separation logic or missing schemas?"
 
 **When a console error is provided, analyze and report it using this strict structure:**
 1. **Severity (חומרת הבעיה):** Classify as "Critical" (causes app crash, blank screen, or data corruption) or "Non-Critical" (app continues running, e.g., minor network block, console warning).
-2. **Root Cause (שורש הבעיה):** Explain the core technical issue in one clear sentence, explicitly referencing the historical checkpoints above if applicable.
+2. **Root Cause (שורש הבעיה):** Explain the core technical issue in one clear sentence.
 3. **Actionable Fix (פתרון מעשי):** Provide the exact technical steps or explicitly state if it can be safely ignored and why.
 
-## Dead Code & Ghost Logic Detector (Post-Refactor Rule)
-Since the system underwent a major architectural shift (moving to the Toggle Cart/Order logic), there is a high risk of "Ghost Logic" - old functions, API calls, or state variables that are no longer used but still exist in the codebase.
-**Rule:**
-Whenever you edit or read a component or hook (especially in the Cart/Checkout flow), actively scan for DEAD CODE. 
-If you find a function or state that you suspect is unnecessary or you don't understand its purpose under the NEW logic, DO NOT IGNORE IT. You MUST explicitly point it out to the user and ask for permission to delete it to keep the codebase clean.
 
 ## Explicit Permission for Code Changes
 **Rule:**
