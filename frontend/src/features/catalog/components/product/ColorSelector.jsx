@@ -77,6 +77,6 @@ const ColorSelector = ({ productModel, selectedSku, setSelectedSku, setCurrentIm
       </div>
     </div>
   );
-};
+}; 
 
 export default ColorSelector;
