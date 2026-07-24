@@ -55,8 +55,11 @@ const AddToCartPanel = ({
         
         {/* Stock Indicator Below Slider Bubble */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
-          {selectedSku && selectedSku.stock_meters > 0 && selectedSku.stock_meters <= lowStockThreshold ? (
-            <div style={{ 
+          {!selectedSku ? (
+            <div style={{ color: 'var(--text-light)' }}>
+              בחרו צבע כדי לראות את המלאי הזמין
+            </div>
+          ) : selectedSku.stock_meters > 0 && selectedSku.stock_meters <= lowStockThreshold ? (            <div style={{ 
               color: '#b45309', 
               fontWeight: 'bold', 
               fontSize: '1rem', 
@@ -140,11 +143,36 @@ const AddToCartPanel = ({
           <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(59, 130, 246, 0.05)', padding: '1rem 2rem', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.1)', width: '100%' }}>
             <span style={{ fontSize: '1.1rem', color: 'var(--text-color)', fontWeight: 'bold', marginBottom: '0.25rem' }}>סה"כ לתשלום:</span>
             <span style={{ fontSize: '2.4rem', fontWeight: 'bold', color: 'var(--primary-color)', lineHeight: 1.2 }}>
-              {(Math.round(Math.round((currentPrice || 0) * 100) * Math.round(lengthMeters * 10) * units / 10) / 100).toFixed(2)} ₪
+              {!selectedSku ? '0.00' : (Math.round(Math.round((currentPrice || 0) * 100) * Math.round(lengthMeters * 10) * units / 10) / 100).toFixed(2)} ₪
             </span>
             <span style={{ fontSize: '0.95rem', color: 'var(--text-light)', marginTop: '0.25rem' }}>
               {lengthMeters.toFixed(1)} מטרים, {units === 1 ? 'יחידה אחת' : `${units} יחידות`}
             </span>
+              <div style={{ 
+                marginTop: '0.6rem', 
+                alignSelf: 'center',
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '0.4rem', 
+                fontSize: '0.9rem',
+                color: 'var(--primary-color, #1A365D)',
+                fontWeight: '600',
+                background: 'rgba(255, 255, 255)',
+                padding: '0.2rem 0.7rem',
+                borderRadius: '20px',
+                border: '1px solid rgba(26, 54, 93, 0.15)',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+              }}>
+                <span style={{ color: 'var(--text-light)', fontWeight: 'normal' }}>צבע:</span>
+                <span style={{ color: !selectedSku ? '#ef4444' : 'inherit', textAlign: 'center', lineHeight: '1.1' }}>
+                  {!selectedSku ? 'לא נבחר' : selectedSku.color_name.split(/\s+/).map((word, index, arr) => (
+                    <React.Fragment key={index}>
+                      {word}
+                      {index < arr.length - 1 && <br />}
+                    </React.Fragment>
+                  ))}
+                </span>
+              </div>
           </div>
         </div>
 
@@ -159,10 +187,10 @@ const AddToCartPanel = ({
         ) : (
           <AddToCartButton 
             onClick={handleAddToCart} 
-            disabled={!selectedSku || selectedSku.stock_meters < 0.1 || addingToCart}
+            disabled={!selectedSku || selectedSku.stock_meters < 0.1 || units < 1 || lengthMeters < minCutLength || addingToCart}
             style={{ width: '100%' }}
           >
-            {!selectedSku || selectedSku.stock_meters < 0.1 ? 'אזל במלאי' : addingToCart ? 'מוסיף...' : (
+            {!selectedSku ? 'בחר צבע' : selectedSku.stock_meters < 0.1 ? 'אזל במלאי' : units < 1 ? 'כמות יחידות לא חוקית' : lengthMeters < minCutLength ? 'אורך קצר מדי' : addingToCart ? 'מוסיף...' : (
               <>
                 הוסף לעגלה <ShoppingCart size={24} />
               </>

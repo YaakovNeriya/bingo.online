@@ -108,7 +108,7 @@ const ProductDetailView = () => {
         {/* Left Side (RTL) - Cart & Actions */}
         <div className="grid-cart">
           <AddToCartPanel 
-            selectedSku={activeSku} 
+            selectedSku={selectedSku} 
             user={user} 
             currentPrice={currentPrice} 
             lengthMeters={lengthMeters} 

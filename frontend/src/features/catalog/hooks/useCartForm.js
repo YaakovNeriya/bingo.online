@@ -32,6 +32,10 @@ export const useCartForm = (modelId, selectedSku, minCutLength, syncCartContext)
   }, [minCutLength]);
 
   const handleAddToCart = async () => {
+    if (!selectedSku) {
+      showError('אנא בחר צבע לפני הוספה לעגלה.');
+      return;
+    }
     if (lengthMeters < 0.1) {
       showError('אורך מינימלי הוא 0.1 מטר.');
       return;

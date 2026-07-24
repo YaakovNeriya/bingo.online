@@ -5,7 +5,30 @@ const ColorSelector = ({ productModel, unifiedMedia, selectedSku, setSelectedSku
   return (
     <div>
       <h4 style={{ marginBottom: '0.5rem' }}>בחר צבע:</h4>
-      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <div 
+        className="color-scroll-container"
+        style={{ 
+          display: 'flex', 
+          gap: '0.5rem', 
+          overflowX: 'auto',
+          paddingBottom: '12px',
+          paddingTop: '6px',     
+          paddingRight: '20px',
+          paddingLeft: '20px',
+          marginRight: '-20px',
+          marginLeft: '-20px',
+          scrollbarWidth: 'none', 
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+          WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
+          maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)'
+        }}
+      >
+        <style>{`
+          .color-scroll-container::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         {productModel.color_skus.map(sku => {
           const isOutOfStock = sku.stock_meters <= 0;
           const isSelected = selectedSku?.id === sku.id;
@@ -28,27 +51,31 @@ const ColorSelector = ({ productModel, unifiedMedia, selectedSku, setSelectedSku
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.4rem',
+                gap: '0.5rem',
                 cursor: 'pointer',
                 opacity: isOutOfStock ? 0.5 : 1,
-                transition: 'transform 0.2s',
-                transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: isSelected ? 'scale(1.08)' : 'scale(1)',
+                padding: '3px',
+                flexShrink: 0
               }}
               title={isOutOfStock ? 'אזל מהמלאי' : `מלאי: ${sku.stock_meters}מ'`}
             >
               <div style={{
-                width: '60px',
-                height: '60px',
+                width: '58px',
+                height: '58px',
                 borderRadius: '50%',
-                border: isSelected ? '3px solid #1A365D' : '2px solid #cbd5e1',
-                boxShadow: isSelected ? '0 4px 12px rgba(26, 54, 93, 0.3)' : '0 2px 5px rgba(0,0,0,0.1)',
+                border: isSelected ? '3px solid var(--primary-color, #1A365D)' : '0px',
+                boxShadow: isSelected 
+                  ? '0 0 0 3px #ffffff, 0 0 0 5.5px var(--primary-color, #1A365D), 0 8px 18px rgba(0,0,0,0.2)' 
+                  : '0 0px 0px rgba(0, 0, 0)',
                 position: 'relative',
                 overflow: 'hidden',
                 backgroundColor: '#f1f5f9',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'all 0.2s'
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
               }}>
                 {lastImage ? (
                   <SmartImage 
@@ -75,10 +102,14 @@ const ColorSelector = ({ productModel, unifiedMedia, selectedSku, setSelectedSku
                 fontWeight: isSelected ? 'bold' : 'normal',
                 color: isSelected ? '#1A365D' : 'var(--text-color)',
                 textAlign: 'center',
-                maxWidth: '74px',
-                lineHeight: '1.2'
+                lineHeight: '1.15'
               }}>
-                {sku.color_name}
+                {sku.color_name.split(/\s+/).map((word, index, arr) => (
+                  <React.Fragment key={index}>
+                    {word}
+                    {index < arr.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
               </span>
             </div>
           );

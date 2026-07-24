@@ -26,6 +26,47 @@ const ProductImageGallery = ({ productModel, unifiedMedia, selectedSku, setSelec
           showDots={true}
           duration={25}
         />
+        
+        {/* Elegant Color Tag */}
+        {(() => {
+          const currentMedia = unifiedMedia?.[currentImageIndex];
+          if (!currentMedia || !currentMedia.skuId) return null;
+          
+          const currentSku = productModel?.color_skus?.find(s => s.id === currentMedia.skuId);
+          if (!currentSku || !currentSku.color_name) return null;
+
+          return (
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'rgba(79, 80, 80, 0.5)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              color: '#ffffff',
+              padding: '4px 12px',
+              borderRadius: '99px',
+              fontSize: '0.8rem',
+              fontWeight: '500',
+              // boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              zIndex: 10,
+              pointerEvents: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              animation: 'fadeIn 0.2s ease-out'
+            }}>
+              <span style={{ fontWeight: 'bold', textAlign: 'center', lineHeight: '1.1' }}>
+                {currentSku.color_name.split(/\s+/).map((word, index, arr) => (
+                  <React.Fragment key={index}>
+                    {word}
+                    {index < arr.length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </span>
+            </div>
+          );
+        })()}
       </div>
 
       {lightboxOpen && unifiedMedia && unifiedMedia.length > 0 && (
