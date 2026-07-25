@@ -110,13 +110,26 @@ describe('ProductDetailView Component', () => {
       expect(screen.getAllByText('Winter Collection').length).toBeGreaterThan(0);
     });
 
-    // Initial color selection is Red (first SKU)
-    expect(screen.getAllByText('Red').length).toBeGreaterThan(0);
-    expect(screen.getByText(/במלאי:/)).toBeInTheDocument();
-    expect(screen.getByText('50')).toBeInTheDocument(); // Red stock
+    // Initial state: No color selected
+    expect(screen.getByText('בחרו צבע כדי לראות את המלאי הזמין')).toBeInTheDocument();
 
-    // Base price should be 15.5
-    expect(screen.getByText(/15\.5/)).toBeInTheDocument();
+    // Test selecting an in-stock color (Red)
+    fireEvent.click(screen.getByText('Red'));
+    await waitFor(() => {
+      expect(screen.getByText(/במלאי:/)).toBeInTheDocument();
+      expect(screen.getByText('50')).toBeInTheDocument();
+      // Base price should be 15.5 for Red (no specific price)
+      expect(screen.getByText(/15\.5/)).toBeInTheDocument();
+    });
+
+    // Test selecting an out-of-stock color (Blue)
+    fireEvent.click(screen.getByText('Blue'));
+    await waitFor(() => {
+      expect(screen.getByText('אזל במלאי')).toBeInTheDocument();
+      expect(screen.getByText('0')).toBeInTheDocument(); // 0 stock
+      // Specific price should be 20 for Blue
+      expect(screen.getByText(/20/)).toBeInTheDocument();
+    });
 
     // Minimum order length from settings should be respected (2.5)
     expect(screen.getByText('Slider Value: 2.5')).toBeInTheDocument();
